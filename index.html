@@ -34,7 +34,7 @@ li button{padding:6px 10px;font-size:.9rem}
 details{margin-top:28px;border-top:1px solid var(--line);padding-top:14px}
 summary{cursor:pointer;font-weight:600}
 label{display:block;margin:14px 0 4px;font-weight:600}
-textarea{width:100%;min-height:150px;font:inherit;font-size:.95rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
+textarea{width:100%;min-height:150px;resize:none;overflow:hidden;display:block;font:inherit;font-size:.95rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
 .hint{color:var(--mut);font-size:.88rem;margin:0 0 4px}
 #msg{min-height:1.4em;color:var(--mut);margin:10px 0 0}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
@@ -199,7 +199,7 @@ $("copy").onclick=async()=>{
 $("reset").onclick=()=>{
   lists=JSON.parse(JSON.stringify(DEF));save("lists",lists);
   ["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"));
-  $("msg").textContent="Listan är återställd.";
+  fitAll();$("msg").textContent="Listan är återställd.";
 };
 render();
 
@@ -235,7 +235,7 @@ let incoming=null;
 try{const m=location.hash.match(/^#d=(.+)$/);if(m)incoming=clean(JSON.parse(dec(m[1])))}catch(e){}
 function apply(w,v){
   if(w&&incoming.w){week=incoming.w;locks=incoming.k;save("week",week);save("locks",locks);render()}
-  if(v&&incoming.v){lists=incoming.v;save("lists",lists);["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"))}
+  if(v&&incoming.v){lists=incoming.v;save("lists",lists);["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"));fitAll()}
   incoming=null;$("incoming").hidden=true;
   try{history.replaceState(null,"",location.pathname)}catch(e){}
 }
@@ -310,6 +310,13 @@ ulEl.addEventListener("keydown",e=>{
   if(j<0||j>6)return;
   if(swapDays(i,j)){const n=ulEl.children[j].querySelector(".grip");if(n)n.focus()}
 });
+
+function fit(t){t.style.height="auto";t.style.height=(t.scrollHeight+2)+"px"}
+function fitAll(){["vardag","helg"].forEach(k=>fit($(k)))}
+["vardag","helg"].forEach(k=>$(k).addEventListener("input",()=>fit($(k))));
+document.querySelector("details").addEventListener("toggle",fitAll);
+addEventListener("resize",fitAll);
+fitAll();
 
 const mq=matchMedia("(prefers-color-scheme: dark)");
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":mq.matches};
