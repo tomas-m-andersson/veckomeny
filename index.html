@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Veckomeny</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1f5fbf">
+<meta name="theme-color" content="#e8f2fb">
 <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -37,9 +37,12 @@ label{display:block;margin:14px 0 4px;font-weight:600}
 textarea{width:100%;min-height:150px;font:inherit;font-size:.95rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
 .hint{color:var(--mut);font-size:.88rem;margin:0 0 4px}
 #msg{min-height:1.4em;color:var(--mut);margin:10px 0 0}
-.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-#theme{width:44px;height:44px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none}
-#theme svg{width:22px;height:22px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.icons{display:flex;gap:8px;flex:none}
+.sub[hidden]{display:none}
+#theme,#info{width:44px;height:44px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none}
+#info[aria-expanded="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#theme svg,#info svg{width:22px;height:22px}
 .acts{display:flex;gap:6px}
 button.edit{width:34px;display:grid;place-items:center}
 .ratt-in{font:inherit;width:100%;min-width:0;padding:8px 10px;border:2px solid var(--acc);border-radius:8px;background:var(--bg);color:var(--ink)}
@@ -55,12 +58,27 @@ li.target{outline:3px dashed var(--acc);outline-offset:-3px}
 li.nodrop{outline:3px dashed var(--mut);outline-offset:-3px;opacity:.6}
 @media (max-width:460px){li{grid-template-columns:32px 1fr auto}.grip{grid-row:1;grid-column:1}.dag{grid-row:1;grid-column:2/-1}.ratt,.ratt-in{grid-row:2;grid-column:1/3}.acts{grid-row:2;grid-column:3;gap:4px}li .acts button{padding:6px 8px}}
 @media (prefers-reduced-motion:no-preference){li{transition:transform .15s}li.pop{transform:scale(1.015)}}
+
+/* ===== Design ===== */
+:root{--bg:#e8f2fb;--card:#ffffff;--ink:#1a2433;--mut:#5a6b80;--line:#cfdcea;--acc:#2563d6;--accink:#ffffff;--helg:#ffd84d;--helgink:#3a2c00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a28;--card:#1a2638;--ink:#eaf1fb;--mut:#9fb1c8;--line:#2b3b52;--acc:#7aa8ff;--accink:#0a1a38;--helg:#e0b92f;--helgink:#241b00}}
+:root[data-theme="dark"]{--bg:#101a28;--card:#1a2638;--ink:#eaf1fb;--mut:#9fb1c8;--line:#2b3b52;--acc:#7aa8ff;--accink:#0a1a38;--helg:#e0b92f;--helgink:#241b00}
+body{font-family:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI",system-ui,sans-serif}
+h1{color:var(--acc);font-weight:800}
+.sub{font-size:1rem}
+button{border-radius:999px;border-width:2px}
+.main{padding:12px 22px;font-size:1.02rem}
+li{border:0;border-radius:20px;box-shadow:inset 8px 0 0 var(--dc),0 2px 0 var(--line);padding:14px 16px 14px 20px}
+li:nth-child(1){--dc:#e5484d}li:nth-child(2){--dc:#f08a24}li:nth-child(3){--dc:#e2b007}li:nth-child(4){--dc:#2f9e5b}li:nth-child(5){--dc:#1f8fd1}li:nth-child(6){--dc:#6e56cf}li:nth-child(7){--dc:#d6409f}
+.ratt{font-size:1.1rem;font-weight:600}
+.dag small{display:inline-block;background:var(--helg);color:var(--helgink);border-radius:99px;padding:0 9px;font-size:.72rem;font-weight:700;margin-top:3px}
+
 </style>
 </head>
 <body>
 <main>
-<header class="top"><h1>Veckomeny</h1><button id="theme" type="button"></button></header>
-<p class="sub">Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter. Dra i prickarna till vänster för att byta plats på två dagar. Med pennan skriver du en egen rätt för just den dagen.</p>
+<header class="top"><h1>Veckomeny</h1><div class="icons"><button id="info" type="button" aria-expanded="false" aria-controls="infotext"></button><button id="theme" type="button"></button></div></header>
+<p class="sub" id="infotext" hidden>Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter. Dra i prickarna till vänster för att byta plats på två dagar. Med pennan skriver du en egen rätt för just den dagen.</p>
 <div id="incoming" hidden></div>
 <div class="bar">
 <button class="main" id="gen">Slumpa ny vecka</button>
@@ -303,13 +321,21 @@ function paintTheme(){
   $("theme").innerHTML=d?SUN:MOON;
   $("theme").setAttribute("aria-label",d?"Byt till ljust läge":"Byt till mörkt läge");
   const m=document.querySelector('meta[name="theme-color"]');
-  if(m)m.content=d?"#121a1c":"#1f5fbf";
+  if(m)m.content=d?"#101a28":"#e8f2fb";
 }
 $("theme").onclick=()=>{
   const n=isDark()?"light":"dark";
   document.documentElement.dataset.theme=n;
   try{localStorage.setItem("theme",n)}catch(e){}
   paintTheme();
+};
+const QI='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9.2a3.2 3.2 0 0 1 6.2 1c0 2.1-3.2 2.7-3.2 4.6"/><path d="M12 19h.01"/></svg>';
+$("info").innerHTML=QI;
+$("info").setAttribute("aria-label","Visa information");
+$("info").onclick=()=>{
+  const t=$("infotext");t.hidden=!t.hidden;
+  $("info").setAttribute("aria-expanded",String(!t.hidden));
+  $("info").setAttribute("aria-label",t.hidden?"Visa information":"Dölj information");
 };
 if(mq.addEventListener)mq.addEventListener("change",paintTheme);
 paintTheme();
