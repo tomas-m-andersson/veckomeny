@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Veckomeny</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f5fbf">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef3f1;--card:#fff;--ink:#1b2a2e;--mut:#5b6c70;--line:#d3ddda;--acc:#1f5fbf;--accink:#fff;--helg:#f4c94a;--helgink:#3b2d00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a1c;--card:#1b272a;--ink:#e8f0ee;--mut:#97a9ad;--line:#2d3e42;--acc:#6aa3ff;--accink:#08162e;--helg:#d9b13a;--helgink:#241b00}}
+:root[data-theme="dark"]{--bg:#121a1c;--card:#1b272a;--ink:#e8f0ee;--mut:#97a9ad;--line:#2d3e42;--acc:#6aa3ff;--accink:#08162e;--helg:#d9b13a;--helgink:#241b00}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:28px 18px 48px}
+h1{font-size:clamp(2.4rem,9vw,3.6rem);line-height:1;margin:0 0 6px;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--mut);margin:0 0 22px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px}
+button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.main{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600;padding:12px 20px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+li{display:grid;grid-template-columns:92px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--acc);border-radius:12px;padding:12px 14px}
+li.helg{border-left-color:var(--helg)}
+.dag{font-weight:800}
+.dag small{display:block;font-weight:400;color:var(--mut);font-size:.78rem}
+.ratt{font-size:1.05rem}
+li button{padding:6px 10px;font-size:.9rem}
+details{margin-top:28px;border-top:1px solid var(--line);padding-top:14px}
+summary{cursor:pointer;font-weight:600}
+label{display:block;margin:14px 0 4px;font-weight:600}
+textarea{width:100%;min-height:150px;font:inherit;font-size:.95rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
+.hint{color:var(--mut);font-size:.88rem;margin:0 0 4px}
+#msg{min-height:1.4em;color:var(--mut);margin:10px 0 0}
+.acts{display:flex;gap:6px}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+#incoming{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:2px solid var(--acc);border-radius:12px;padding:12px 14px;margin-bottom:18px}
+#incoming[hidden]{display:none}
+#incoming p{flex:1 1 100%;margin:0}
+@media (max-width:460px){li{grid-template-columns:1fr auto}.dag{grid-column:1/-1}}
+@media (prefers-reduced-motion:no-preference){li{transition:transform .15s}li.pop{transform:scale(1.015)}}
+</style>
+</head>
+<body>
+<main>
+<h1>Veckomeny</h1>
+<p class="sub">Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter.</p>
+<div id="incoming" hidden></div>
+<div class="bar">
+<button class="main" id="gen">Slumpa ny vecka</button>
+<button id="share">Dela veckan</button>
+<button id="copy">Kopiera menyn</button>
+</div>
+<ul id="week"></ul>
+<p id="msg" role="status"></p>
+<details>
+<summary>Redigera rätter</summary>
+<label for="vardag">Vardagsrätter</label>
+<p class="hint">En rätt per rad. Sparas automatiskt i den här webbläsaren.</p>
+<textarea id="vardag"></textarea>
+<label for="helg">Helg- och fredagsrätter</label>
+<textarea id="helg"></textarea>
+<p><button id="sharelist">Dela rättslistan</button> <button id="reset">Återställ min ursprungliga lista</button></p>
+</details>
+</main>
+<script>
+const DAGAR=["Måndag","Tisdag","Onsdag","Torsdag","Fredag","Lördag","Söndag"];
+const DEF={
+vardag:["Blodpudding med bacon och stekt ägg","Potatisbullar med bacon","Falukorv med makaroner/stuvade makaroner","Köttfärssås med spaghetti","Fiskpinnar med potatis/potatismos","Köttbullar med potatismos och gräddsås","Pasta med skinksås","Tjockpannkaka med bacon","Lax med potatis","Korvstroganoff med pasta eller ris","Kyckling med currysås och ris","Korv med bröd","Chicken nuggets med pommes eller ris"],
+helg:["Köttfärslimpa med potatis och sås","Pannbiff med potatis och stekt lök","Tacos","Hemgjord pizza","Pannkakor","Våfflor","Plättar"]};
+function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let lists=load("lists")||JSON.parse(JSON.stringify(DEF));
+let week=load("week");
+let locks=load("locks");
+if(!Array.isArray(locks)||locks.length!==7)locks=Array(7).fill(false);
+const $=id=>document.getElementById(id);
+const kind=i=>i>=4?"helg":"vardag";
+function pick(i,used){
+  const all=lists[kind(i)];
+  const pool=all.filter(x=>!used.includes(x));
+  const src=pool.length?pool:all;
+  return src.length?src[Math.floor(Math.random()*src.length)]:"Lägg till rätter under Redigera rätter";
+}
+function gen(){
+  const old=week&&week.length===7?week:[];
+  const next=DAGAR.map((_,i)=>locks[i]&&old[i]?old[i]:null);
+  const used=next.filter(Boolean);
+  week=next.map((d,i)=>{if(d)return d;const n=pick(i,used);used.push(n);return n});
+  save("week",week);render();
+}
+function swap(i){
+  if(locks[i])return;
+  const used=week.filter((_,j)=>j!==i&&kind(j)===kind(i));
+  week[i]=pick(i,used);save("week",week);render(i);
+}
+function render(hit){
+  const ul=$("week");ul.textContent="";
+  if(!week||week.length!==7){gen();return}
+  week.forEach((d,i)=>{
+    const li=document.createElement("li");
+    if(kind(i)==="helg")li.className="helg";
+    const dag=document.createElement("div");dag.className="dag";
+    dag.textContent=DAGAR[i];
+    if(kind(i)==="helg"){const s=document.createElement("small");s.textContent="helgrätt";dag.appendChild(s)}
+    const r=document.createElement("div");r.className="ratt";r.textContent=d;
+    const b=document.createElement("button");b.textContent="Byt";
+    b.setAttribute("aria-label","Byt rätt för "+DAGAR[i]);
+    b.onclick=()=>swap(i);
+    const lk=document.createElement("button");
+    lk.textContent=locks[i]?"Låst":"Lås";
+    lk.setAttribute("aria-pressed",locks[i]?"true":"false");
+    lk.setAttribute("aria-label",(locks[i]?"Lås upp ":"Lås ")+DAGAR[i]);
+    lk.onclick=()=>{locks[i]=!locks[i];save("locks",locks);render()};
+    b.disabled=!!locks[i];
+    const acts=document.createElement("div");acts.className="acts";acts.append(lk,b);
+    li.append(dag,r,acts);ul.appendChild(li);
+    if(hit===i){li.classList.add("pop");setTimeout(()=>li.classList.remove("pop"),160)}
+  });
+}
+$("gen").onclick=gen;
+$("copy").onclick=async()=>{
+  const t=DAGAR.map((d,i)=>d+": "+week[i]).join("\n");
+  try{await navigator.clipboard.writeText(t);$("msg").textContent="Menyn är kopierad."}
+  catch(e){$("msg").textContent="Kunde inte kopiera. Markera texten och kopiera själv."}
+};
+["vardag","helg"].forEach(k=>{
+  $(k).value=lists[k].join("\n");
+  $(k).addEventListener("input",()=>{
+    lists[k]=$(k).value.split("\n").map(s=>s.trim()).filter(Boolean);
+    save("lists",lists);
+  });
+});
+$("reset").onclick=()=>{
+  lists=JSON.parse(JSON.stringify(DEF));save("lists",lists);
+  ["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"));
+  $("msg").textContent="Listan är återställd.";
+};
+render();
+
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const dec=t=>{t=t.replace(/-/g,"+").replace(/_/g,"/");while(t.length%4)t+="=";return decodeURIComponent(escape(atob(t)))};
+async function share(payload,title){
+  const url=location.origin+location.pathname+"#d="+enc(payload);
+  try{
+    if(navigator.share){await navigator.share({title:title,url:url});return}
+    await navigator.clipboard.writeText(url);
+    $("msg").textContent="Länken är kopierad. Skicka den till din fru.";
+  }catch(e){
+    if(e&&e.name==="AbortError")return;
+    prompt("Kopiera länken och skicka den:",url);
+  }
+}
+$("share").onclick=()=>share({w:week,k:locks},"Veckomeny");
+$("sharelist").onclick=()=>share({v:lists},"Rättslista");
+
+function clean(o){
+  const s=x=>typeof x==="string"?x.trim().slice(0,120):"";
+  const out={};
+  if(Array.isArray(o.w)&&o.w.length===7&&o.w.every(x=>typeof x==="string")){
+    out.w=o.w.map(s);
+    out.k=Array.isArray(o.k)&&o.k.length===7?o.k.map(Boolean):Array(7).fill(false);
+  }
+  if(o.v&&Array.isArray(o.v.vardag)&&Array.isArray(o.v.helg)){
+    out.v={vardag:o.v.vardag.map(s).filter(Boolean).slice(0,100),helg:o.v.helg.map(s).filter(Boolean).slice(0,100)};
+  }
+  return out.w||out.v?out:null;
+}
+let incoming=null;
+try{const m=location.hash.match(/^#d=(.+)$/);if(m)incoming=clean(JSON.parse(dec(m[1])))}catch(e){}
+function apply(w,v){
+  if(w&&incoming.w){week=incoming.w;locks=incoming.k;save("week",week);save("locks",locks);render()}
+  if(v&&incoming.v){lists=incoming.v;save("lists",lists);["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"))}
+  incoming=null;$("incoming").hidden=true;
+  try{history.replaceState(null,"",location.pathname)}catch(e){}
+}
+if(incoming){
+  const box=$("incoming");
+  const p=document.createElement("p");
+  p.textContent=incoming.w?"Någon har delat en veckomeny med dig. Din egen meny ersätts om du använder den.":"Någon har delat en rättslista med dig. Din egen lista ersätts om du använder den.";
+  box.appendChild(p);
+  const mk=(t,f)=>{const b=document.createElement("button");b.textContent=t;b.onclick=f;box.appendChild(b)};
+  if(incoming.w)mk("Använd veckan",()=>apply(true,false));
+  if(incoming.v)mk("Använd rättslistan",()=>apply(false,true));
+  mk("Stäng",()=>apply(false,false));
+  box.hidden=false;
+}
+if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+</body>
+</html>
