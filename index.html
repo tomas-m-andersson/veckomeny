@@ -25,7 +25,7 @@ button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px so
 .main{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600;padding:12px 20px}
 .bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
 ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-li{display:grid;grid-template-columns:92px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--acc);border-radius:12px;padding:12px 14px}
+li{display:grid;grid-template-columns:32px 92px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--acc);border-radius:12px;padding:12px 14px}
 li.helg{border-left-color:var(--helg)}
 .dag{font-weight:800}
 .dag small{display:block;font-weight:400;color:var(--mut);font-size:.78rem}
@@ -46,14 +46,19 @@ button:disabled{opacity:.45;cursor:default}
 #incoming{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:2px solid var(--acc);border-radius:12px;padding:12px 14px;margin-bottom:18px}
 #incoming[hidden]{display:none}
 #incoming p{flex:1 1 100%;margin:0}
-@media (max-width:460px){li{grid-template-columns:1fr auto}.dag{grid-column:1/-1}}
+.grip{width:32px;height:40px;padding:0;border:0;background:none;color:var(--mut);cursor:grab;touch-action:none;display:grid;place-items:center}
+.grip:disabled{opacity:.3;cursor:default}
+li.dragging{position:relative;z-index:5;box-shadow:0 10px 26px rgba(0,0,0,.28);transition:none;cursor:grabbing}
+li.target{outline:3px dashed var(--acc);outline-offset:-3px}
+li.nodrop{outline:3px dashed var(--mut);outline-offset:-3px;opacity:.6}
+@media (max-width:460px){li{grid-template-columns:32px 1fr auto}.grip{grid-row:1;grid-column:1}.dag{grid-row:1;grid-column:2/-1}.ratt{grid-row:2;grid-column:1/3}.acts{grid-row:2;grid-column:3}}
 @media (prefers-reduced-motion:no-preference){li{transition:transform .15s}li.pop{transform:scale(1.015)}}
 </style>
 </head>
 <body>
 <main>
 <header class="top"><h1>Veckomeny</h1><button id="theme" type="button"></button></header>
-<p class="sub">Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter.</p>
+<p class="sub">Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter. Dra i prickarna till vänster för att byta plats på två dagar.</p>
 <div id="incoming" hidden></div>
 <div class="bar">
 <button class="main" id="gen">Slumpa ny vecka</button>
@@ -75,6 +80,7 @@ button:disabled{opacity:.45;cursor:default}
 </main>
 <script>
 const DAGAR=["Måndag","Tisdag","Onsdag","Torsdag","Fredag","Lördag","Söndag"];
+const GRIP='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18" r="1.8"/><circle cx="15" cy="18" r="1.8"/></svg>';
 const DEF={
 vardag:["Blodpudding med bacon och stekt ägg","Potatisbullar med bacon","Falukorv med makaroner/stuvade makaroner","Köttfärssås med spaghetti","Fiskpinnar med potatis/potatismos","Köttbullar med potatismos och gräddsås","Pasta med skinksås","Tjockpannkaka med bacon","Lax med potatis","Korvstroganoff med pasta eller ris","Kyckling med currysås och ris","Korv med bröd","Chicken nuggets med pommes eller ris"],
 helg:["Köttfärslimpa med potatis och sås","Pannbiff med potatis och stekt lök","Tacos","Hemgjord pizza","Pannkakor","Våfflor","Plättar"]};
@@ -126,7 +132,11 @@ function render(hit){
     lk.onclick=()=>{locks[i]=!locks[i];save("locks",locks);render()};
     b.disabled=!!locks[i];
     const acts=document.createElement("div");acts.className="acts";acts.append(lk,b);
-    li.append(dag,r,acts);ul.appendChild(li);
+    const gr=document.createElement("button");
+    gr.type="button";gr.className="grip";gr.innerHTML=GRIP;gr.disabled=!!locks[i];
+    gr.setAttribute("aria-label","Flytta "+DAGAR[i]+": dra, eller tryck pil upp eller ner");
+    li.dataset.i=i;
+    li.append(gr,dag,r,acts);ul.appendChild(li);
     if(hit===i){li.classList.add("pop");setTimeout(()=>li.classList.remove("pop"),160)}
   });
   const all=locks.every(Boolean),la=$("lockall");
@@ -204,6 +214,56 @@ if(incoming){
   mk("Stäng",()=>apply(false,false));
   box.hidden=false;
 }
+function swapDays(a,b){
+  if(locks[a]||locks[b]){$("msg").textContent=DAGAR[locks[a]?a:b]+" är låst. Lås upp dagen först.";return false}
+  [week[a],week[b]]=[week[b],week[a]];
+  save("week",week);
+  $("msg").textContent=DAGAR[a]+" och "+DAGAR[b]+" bytte plats.";
+  render();return true;
+}
+let drag=null;
+const ulEl=$("week");
+ulEl.addEventListener("pointerdown",e=>{
+  const g=e.target.closest(".grip");
+  if(!g||g.disabled||e.button>0)return;
+  const li=g.closest("li");
+  drag={i:+li.dataset.i,li:li,y0:e.clientY,to:null,blocked:null};
+  try{g.setPointerCapture(e.pointerId)}catch(_){}
+  li.classList.add("dragging");
+  e.preventDefault();
+});
+addEventListener("pointermove",e=>{
+  if(!drag)return;
+  drag.li.style.transform="translateY("+(e.clientY-drag.y0)+"px)";
+  const hit=document.elementsFromPoint(e.clientX,e.clientY).map(n=>n.closest?n.closest("#week li"):null).find(n=>n&&n!==drag.li);
+  ulEl.querySelectorAll("li").forEach(l=>l.classList.remove("target","nodrop"));
+  drag.to=null;drag.blocked=null;
+  if(hit){
+    const j=+hit.dataset.i;
+    if(locks[j]){hit.classList.add("nodrop");drag.blocked=j}
+    else{hit.classList.add("target");drag.to=j}
+  }
+});
+function endDrag(e){
+  if(!drag)return;
+  const d=drag;drag=null;
+  ulEl.querySelectorAll("li").forEach(l=>l.classList.remove("target","nodrop"));
+  d.li.classList.remove("dragging");d.li.style.transform="";
+  if(e.type!=="pointerup")return;
+  if(d.to!==null&&d.to!==d.i){swapDays(d.i,d.to);return}
+  if(d.blocked!==null)$("msg").textContent=DAGAR[d.blocked]+" är låst. Lås upp dagen först.";
+}
+addEventListener("pointerup",endDrag);
+addEventListener("pointercancel",endDrag);
+ulEl.addEventListener("keydown",e=>{
+  const g=e.target.closest(".grip");
+  if(!g||(e.key!=="ArrowUp"&&e.key!=="ArrowDown"))return;
+  e.preventDefault();
+  const i=+g.closest("li").dataset.i,j=i+(e.key==="ArrowUp"?-1:1);
+  if(j<0||j>6)return;
+  if(swapDays(i,j)){const n=ulEl.children[j].querySelector(".grip");if(n)n.focus()}
+});
+
 const mq=matchMedia("(prefers-color-scheme: dark)");
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":mq.matches};
 const SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
