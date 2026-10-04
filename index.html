@@ -57,6 +57,7 @@ button:disabled{opacity:.45;cursor:default}
 <div id="incoming" hidden></div>
 <div class="bar">
 <button class="main" id="gen">Slumpa ny vecka</button>
+<button id="lockall"></button>
 <button id="share">Dela veckan</button>
 <button id="copy">Kopiera menyn</button>
 </div>
@@ -92,6 +93,8 @@ function pick(i,used){
   return src.length?src[Math.floor(Math.random()*src.length)]:"Lägg till rätter under Redigera rätter";
 }
 function gen(){
+  if(week&&week.length===7&&locks.every(Boolean)){$("msg").textContent="Alla dagar är låsta. Lås upp några dagar för att slumpa om.";return}
+  $("msg").textContent="";
   const old=week&&week.length===7?week:[];
   const next=DAGAR.map((_,i)=>locks[i]&&old[i]?old[i]:null);
   const used=next.filter(Boolean);
@@ -126,8 +129,15 @@ function render(hit){
     li.append(dag,r,acts);ul.appendChild(li);
     if(hit===i){li.classList.add("pop");setTimeout(()=>li.classList.remove("pop"),160)}
   });
+  const all=locks.every(Boolean),la=$("lockall");
+  la.textContent=all?"Lås upp hela veckan":"Lås hela veckan";
+  la.setAttribute("aria-pressed",all?"true":"false");
 }
 $("gen").onclick=gen;
+$("lockall").onclick=()=>{
+  const all=locks.every(Boolean);
+  locks=Array(7).fill(!all);save("locks",locks);render();
+};
 $("copy").onclick=async()=>{
   const t=DAGAR.map((d,i)=>d+": "+week[i]).join("\n");
   try{await navigator.clipboard.writeText(t);$("msg").textContent="Menyn är kopierad."}
