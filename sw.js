@@ -1,4 +1,4 @@
-const CACHE = "veckomeny-v5";
+const CACHE = "veckomeny-v6";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
