@@ -6,6 +6,7 @@
 <title>Veckomeny</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1f5fbf">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
@@ -36,6 +37,9 @@ label{display:block;margin:14px 0 4px;font-weight:600}
 textarea{width:100%;min-height:150px;font:inherit;font-size:.95rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
 .hint{color:var(--mut);font-size:.88rem;margin:0 0 4px}
 #msg{min-height:1.4em;color:var(--mut);margin:10px 0 0}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+#theme{width:44px;height:44px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none}
+#theme svg{width:22px;height:22px}
 .acts{display:flex;gap:6px}
 button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 button:disabled{opacity:.45;cursor:default}
@@ -48,7 +52,7 @@ button:disabled{opacity:.45;cursor:default}
 </head>
 <body>
 <main>
-<h1>Veckomeny</h1>
+<header class="top"><h1>Veckomeny</h1><button id="theme" type="button"></button></header>
 <p class="sub">Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter.</p>
 <div id="incoming" hidden></div>
 <div class="bar">
@@ -190,6 +194,26 @@ if(incoming){
   mk("Stäng",()=>apply(false,false));
   box.hidden=false;
 }
+const mq=matchMedia("(prefers-color-scheme: dark)");
+const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":mq.matches};
+const SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+const SUN=SVG+'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON=SVG+'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+function paintTheme(){
+  const d=isDark();
+  $("theme").innerHTML=d?SUN:MOON;
+  $("theme").setAttribute("aria-label",d?"Byt till ljust läge":"Byt till mörkt läge");
+  const m=document.querySelector('meta[name="theme-color"]');
+  if(m)m.content=d?"#121a1c":"#1f5fbf";
+}
+$("theme").onclick=()=>{
+  const n=isDark()?"light":"dark";
+  document.documentElement.dataset.theme=n;
+  try{localStorage.setItem("theme",n)}catch(e){}
+  paintTheme();
+};
+if(mq.addEventListener)mq.addEventListener("change",paintTheme);
+paintTheme();
 if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
 </script>
 </body>
