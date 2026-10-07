@@ -75,6 +75,18 @@ li:nth-child(1){--dc:#e5484d}li:nth-child(2){--dc:#f08a24}li:nth-child(3){--dc:#
 .ratt{font-size:1.1rem;font-weight:600}
 .dag small{display:block;width:fit-content;background:var(--helg);color:var(--helgink);border-radius:99px;padding:0 9px;font-size:.72rem;font-weight:700;margin-top:3px}
 
+/* inköpslista */
+#shopbtn[aria-expanded="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#shop{background:var(--card);border-radius:20px;padding:16px 18px 18px;margin-top:14px;box-shadow:0 2px 0 var(--line)}
+#shop[hidden]{display:none}
+#shop h2{margin:0 0 2px;font-size:1.3rem}
+#shop .hint{margin:0 0 8px}
+.shopitem{display:flex;gap:12px;align-items:center;margin:0;padding:10px 2px;border-bottom:1px solid var(--line);font-weight:400;cursor:pointer}
+.shopitem input{width:22px;height:22px;accent-color:var(--acc);flex:none}
+.shopitem.done span{text-decoration:line-through;color:var(--mut)}
+.shopact{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#shopmissing{color:var(--mut);font-size:.9rem;margin:12px 0 0}
+select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -87,8 +99,17 @@ li:nth-child(1){--dc:#e5484d}li:nth-child(2){--dc:#f08a24}li:nth-child(3){--dc:#
 <button id="lockall"></button>
 <button id="share">Dela veckan</button>
 <button id="copy">Kopiera menyn</button>
+<button id="shopbtn" aria-expanded="false" aria-controls="shop">Inköpslista</button>
 </div>
 <ul id="week"></ul>
+<section id="shop" hidden aria-label="Inköpslista">
+<h2>Inköpslista</h2>
+<p class="hint">Veckans ingredienser ihopslagna för 4 personer. Bocka av i affären.</p>
+<div id="shoplist"></div>
+<p id="shopempty" class="hint" hidden>Inga ingredienser hittades för veckans rätter.</p>
+<p id="shopmissing" hidden></p>
+<div class="shopact"><button id="shopcopy">Kopiera listan</button><button id="shopshare">Dela listan</button><button id="shopclear">Avmarkera alla</button></div>
+</section>
 <p id="msg" role="status"></p>
 <details>
 <summary>Redigera rätter</summary>
@@ -97,6 +118,11 @@ li:nth-child(1){--dc:#e5484d}li:nth-child(2){--dc:#f08a24}li:nth-child(3){--dc:#
 <textarea id="vardag"></textarea>
 <label for="helg">Helg- och fredagsrätter</label>
 <textarea id="helg"></textarea>
+<label for="ingdish">Ingredienser per rätt</label>
+<p class="hint">Välj en rätt och skriv en ingrediens per rad, till exempel "500 g köttfärs" eller "2 dl mjölk". Mängderna gäller 4 personer, och samma varor läggs ihop på inköpslistan.</p>
+<select id="ingdish"></select>
+<textarea id="ingtext" aria-label="Ingredienser för vald rätt"></textarea>
+<p><button id="ingreset">Återställ alla ingredienser</button></p>
 <p><button id="sharelist">Dela rättslistan</button> <button id="reset">Återställ min ursprungliga lista</button></p>
 </details>
 </main>
@@ -109,6 +135,9 @@ helg:["Köttfärslimpa med potatis och sås","Pannbiff med potatis och stekt lö
 function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let lists=load("lists")||JSON.parse(JSON.stringify(DEF));
+const DEFING={"Blodpudding med bacon och stekt ägg":["600 g blodpudding","200 g bacon","4 st ägg","lingonsylt"],"Potatisbullar med bacon":["600 g potatisbullar","200 g bacon","lingonsylt"],"Falukorv med makaroner/stuvade makaroner":["600 g falukorv","300 g makaroner","5 dl mjölk","3 msk vetemjöl","2 msk smör"],"Köttfärssås med spaghetti":["500 g köttfärs","400 g spaghetti","1 burk krossade tomater","1 st gul lök","2 st morötter","2 msk tomatpuré"],"Fiskpinnar med potatis/potatismos":["600 g fiskpinnar","1 kg potatis","2 dl mjölk","2 msk smör","250 g frysta ärtor"],"Köttbullar med potatismos och gräddsås":["500 g köttfärs","1 st ägg","1 dl ströbröd","1 st gul lök","1 kg potatis","2 dl matlagningsgrädde","2 dl mjölk","2 msk smör","1 st buljongtärning","lingonsylt"],"Pasta med skinksås":["300 g pasta","200 g skinka","2 dl matlagningsgrädde","100 g riven ost"],"Tjockpannkaka med bacon":["3 dl vetemjöl","6 dl mjölk","3 st ägg","200 g bacon","lingonsylt"],"Lax med potatis":["500 g laxfilé","1 kg potatis","1 st citron","2 dl crème fraiche"],"Korvstroganoff med pasta eller ris":["600 g falukorv","1 st gul lök","3 msk tomatpuré","2 msk ketchup","2 dl matlagningsgrädde","4 dl ris"],"Kyckling med currysås och ris":["600 g kycklingfilé","1 st gul lök","2 msk currypulver","3 dl matlagningsgrädde","4 dl ris"],"Korv med bröd":["8 st korv","8 st korvbröd","ketchup"],"Chicken nuggets med pommes eller ris":["600 g kycklingnuggets","800 g pommes frites","1 st gurka","ketchup"],"Köttfärslimpa med potatis och sås":["600 g köttfärs","1 st ägg","1 dl ströbröd","1 dl mjölk","1 st gul lök","1 kg potatis","2 dl matlagningsgrädde","1 st buljongtärning","lingonsylt"],"Pannbiff med potatis och stekt lök":["600 g köttfärs","1 st ägg","1 dl ströbröd","1 dl mjölk","3 st gul lök","1 kg potatis","2 msk smör","lingonsylt"],"Tacos":["500 g köttfärs","1 förp tacokrydda","1 förp tacoskal","1 st gurka","3 st tomat","150 g riven ost","2 dl crème fraiche"],"Hemgjord pizza":["5 dl vetemjöl","25 g jäst","1 burk krossade tomater","200 g skinka","250 g riven ost"],"Pannkakor":["3 dl vetemjöl","5 dl mjölk","3 st ägg","2 msk smör","sylt"],"Våfflor":["3 dl vetemjöl","4 dl mjölk","2 st ägg","100 g smör","2 dl vispgrädde","sylt"],"Plättar":["3 dl vetemjöl","6 dl mjölk","3 st ägg","2 msk smör","sylt"]};
+let ings=load("ings")||JSON.parse(JSON.stringify(DEFING));
+let checked=load("checked")||[];
 let editing=null;
 const IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
 const LOCK=IC+'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
@@ -133,6 +162,7 @@ function gen(){
   const next=DAGAR.map((_,i)=>locks[i]&&old[i]?old[i]:null);
   const used=next.filter(Boolean);
   week=next.map((d,i)=>{if(d)return d;const n=pick(i,used);used.push(n);return n});
+  checked=[];save("checked",checked);
   save("week",week);render();
 }
 function swap(i){
@@ -184,6 +214,7 @@ function render(hit){
   const all=locks.every(Boolean),la=$("lockall");
   la.textContent=all?"Lås upp hela veckan":"Lås hela veckan";
   la.setAttribute("aria-pressed",all?"true":"false");
+  renderShop();fillDishSelect();
 }
 $("gen").onclick=gen;
 $("lockall").onclick=()=>{
@@ -205,7 +236,7 @@ $("copy").onclick=async()=>{
 $("reset").onclick=()=>{
   lists=JSON.parse(JSON.stringify(DEF));save("lists",lists);
   ["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"));
-  fitAll();$("msg").textContent="Listan är återställd.";
+  fitAll();fillDishSelect();$("msg").textContent="Listan är återställd.";
 };
 render();
 
@@ -241,7 +272,7 @@ let incoming=null;
 try{const m=location.hash.match(/^#d=(.+)$/);if(m)incoming=clean(JSON.parse(dec(m[1])))}catch(e){}
 function apply(w,v){
   if(w&&incoming.w){week=incoming.w;locks=incoming.k;save("week",week);save("locks",locks);render()}
-  if(v&&incoming.v){lists=incoming.v;save("lists",lists);["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"));fitAll()}
+  if(v&&incoming.v){lists=incoming.v;save("lists",lists);["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"));fitAll();fillDishSelect()}
   incoming=null;$("incoming").hidden=true;
   try{history.replaceState(null,"",location.pathname)}catch(e){}
 }
@@ -318,11 +349,119 @@ ulEl.addEventListener("keydown",e=>{
 });
 
 function fit(t){t.style.height="auto";t.style.height=(t.scrollHeight+2)+"px"}
-function fitAll(){["vardag","helg"].forEach(k=>fit($(k)))}
-["vardag","helg"].forEach(k=>$(k).addEventListener("input",()=>fit($(k))));
+function fitAll(){["vardag","helg","ingtext"].forEach(k=>fit($(k)))}
+["vardag","helg","ingtext"].forEach(k=>$(k).addEventListener("input",()=>fit($(k))));
 document.querySelector("details").addEventListener("toggle",fitAll);
 addEventListener("resize",fitAll);
 fitAll();
+
+const UNITS=["g","hg","kg","ml","cl","dl","l","msk","tsk","krm","st","förp","burk","pkt","påse","port"];
+const UM={g:1,hg:100,kg:1000},UV={ml:1,cl:10,dl:100,l:1000};
+function parseIng(line){
+  line=line.trim();if(!line)return null;
+  const m=line.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/);
+  if(!m)return{g:"",q:null,name:line};
+  let q=parseFloat(m[1].replace(",",".")),rest=m[2].trim(),w=rest.split(/\s+/)[0].toLowerCase(),unit="";
+  if(UNITS.includes(w)&&rest.length>w.length){unit=w;rest=rest.slice(w.length).trim()}
+  let g=unit==="st"?"":unit;
+  if(UM[unit]){q*=UM[unit];g="m"}else if(UV[unit]){q*=UV[unit];g="v"}
+  return{g:g,q:q,name:rest};
+}
+function fmt(n){return String(Math.round(n*100)/100).replace(".",",")}
+function qtyText(it){
+  if(it.q==null)return "";
+  if(it.g==="m")return it.q>=1000?fmt(it.q/1000)+" kg":fmt(it.q)+" g";
+  if(it.g==="v")return it.q>=1000?fmt(it.q/1000)+" l":it.q>=100?fmt(it.q/100)+" dl":fmt(it.q)+" ml";
+  return fmt(it.q)+(it.g?" "+it.g:"");
+}
+function shopItems(){
+  const map=new Map(),missing=[];
+  (week||[]).forEach(d=>{
+    const lines=ings[d]||[];
+    if(!lines.length&&!missing.includes(d))missing.push(d);
+    lines.forEach(l=>{
+      const p=parseIng(l);if(!p)return;
+      const key=p.g+"|"+p.name.toLowerCase().replace(/\s+/g," ");
+      const it=map.get(key);
+      if(!it)map.set(key,{key:key,g:p.g,q:p.q,name:p.name});
+      else if(p.q!=null)it.q=(it.q||0)+p.q;
+    });
+  });
+  const items=[...map.values()].sort((a,b)=>a.name.localeCompare(b.name,"sv"));
+  items.forEach(it=>{it.text=qtyText(it)});
+  return{items:items,missing:missing};
+}
+function shopText(){
+  return "Inköpslista\n"+shopItems().items.map(it=>"- "+(it.text?it.text+" ":"")+it.name).join("\n");
+}
+
+function renderShop(){
+  const box=$("shop");if(box.hidden)return;
+  const r=shopItems(),list=$("shoplist");list.textContent="";
+  r.items.forEach(it=>{
+    const lab=document.createElement("label");lab.className="shopitem";
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=checked.includes(it.key);
+    lab.classList.toggle("done",cb.checked);
+    cb.onchange=()=>{
+      checked=cb.checked?checked.concat(it.key):checked.filter(k=>k!==it.key);
+      save("checked",checked);lab.classList.toggle("done",cb.checked);
+    };
+    const t=document.createElement("span");
+    if(it.text){const b=document.createElement("b");b.textContent=it.text+" ";t.appendChild(b)}
+    t.appendChild(document.createTextNode(it.name));
+    lab.append(cb,t);list.appendChild(lab);
+  });
+  $("shopempty").hidden=r.items.length>0;
+  const mi=$("shopmissing");mi.hidden=!r.missing.length;
+  mi.textContent=r.missing.length?"Saknar ingredienser: "+r.missing.join(", ")+". Lägg till dem under Redigera rätter.":"";
+}
+$("shopbtn").onclick=()=>{
+  const s=$("shop");s.hidden=!s.hidden;
+  $("shopbtn").setAttribute("aria-expanded",String(!s.hidden));
+  renderShop();
+  if(!s.hidden)s.scrollIntoView({behavior:"smooth",block:"nearest"});
+};
+$("shopcopy").onclick=async()=>{
+  try{await navigator.clipboard.writeText(shopText());$("msg").textContent="Inköpslistan är kopierad."}
+  catch(e){$("msg").textContent="Kunde inte kopiera listan."}
+};
+$("shopshare").onclick=async()=>{
+  const text=shopText();
+  try{
+    if(navigator.share){await navigator.share({title:"Inköpslista",text:text});return}
+    await navigator.clipboard.writeText(text);
+    $("msg").textContent="Listan är kopierad. Klistra in den i ett meddelande.";
+  }catch(e){
+    if(e&&e.name==="AbortError")return;
+    prompt("Kopiera listan:",text);
+  }
+};
+$("shopclear").onclick=()=>{checked=[];save("checked",checked);renderShop()};
+
+function showIng(){const d=$("ingdish").value;$("ingtext").value=d?(ings[d]||[]).join("\n"):"";fit($("ingtext"))}
+function fillDishSelect(){
+  const sel=$("ingdish"),cur=sel.value,seen=new Set();sel.textContent="";
+  const grp=(label,arr)=>{
+    const g=document.createElement("optgroup");g.label=label;
+    arr.filter(d=>d&&!seen.has(d)).forEach(d=>{seen.add(d);const o=document.createElement("option");o.value=d;o.textContent=d;g.appendChild(o)});
+    if(g.children.length)sel.appendChild(g);
+  };
+  grp("Vardagsrätter",lists.vardag);grp("Helgrätter",lists.helg);grp("Övriga i veckan",week||[]);
+  if(cur&&seen.has(cur))sel.value=cur;
+  showIng();
+}
+$("ingdish").onchange=showIng;
+$("ingtext").addEventListener("input",()=>{
+  const d=$("ingdish").value;if(!d)return;
+  ings[d]=$("ingtext").value.split("\n").map(x=>x.trim()).filter(Boolean);
+  save("ings",ings);renderShop();
+});
+$("ingreset").onclick=()=>{
+  ings=JSON.parse(JSON.stringify(DEFING));save("ings",ings);showIng();renderShop();
+  $("msg").textContent="Ingredienserna är återställda.";
+};
+["vardag","helg"].forEach(k=>$(k).addEventListener("input",fillDishSelect));
+fillDishSelect();
 
 const mq=matchMedia("(prefers-color-scheme: dark)");
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":mq.matches};
