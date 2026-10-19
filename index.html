@@ -165,6 +165,8 @@ body.harspar main{padding-bottom:110px}
 <h2>Spara till GitHub</h2>
 <p class="menystatus" id="ghstatus"></p>
 <p class="hint">Veckomenyn, lås, rättslistor och ingredienser sparas i filen veckomeny.json i ditt GitHub-repo. Därför ser du och din fru samma sak, utan länkar. Varje sparning skriver över filen och blir en egen version i GitHub som går att ångra.</p>
+<label class="kryss"><input type="checkbox" id="autospara" checked> Spara automatiskt</label>
+<p class="hint">När det är på sparas ändringarna på GitHub av sig själva några sekunder efter att du slutat klicka, utan bekräftelser. Kräver token. Inställningen gäller bara den här enheten.</p>
 <div class="val"><button id="ghhamta" type="button">Hämta senaste från GitHub</button></div>
 <details id="ghbox">
 <summary>Inställningar och token</summary>
@@ -188,7 +190,7 @@ body.harspar main{padding-bottom:110px}
 </details>
 <h2>Hjälp</h2>
 <div class="hjalp"><button id="info" type="button" aria-expanded="false" aria-controls="infotext"></button><span>Så fungerar sidan</span></div>
-<p class="hjalptext" id="infotext" hidden>Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter. Dra i prickarna till vänster för att byta plats på två dagar. Med pennan skriver du en egen rätt för just den dagen. Dina ändringar sparas först när du trycker på Spara till GitHub längst ner. Då hamnar de i filen veckomeny.json, och alla som har appen ser dem när de öppnar den.</p>
+<p class="hjalptext" id="infotext" hidden>Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter. Dra i prickarna till vänster för att byta plats på två dagar. Med pennan skriver du en egen rätt för just den dagen. Dina ändringar sparas automatiskt i filen veckomeny.json på GitHub (om du har lagt in token), och alla som har appen ser dem när de öppnar den. Har du stängt av autospara sparar du med knappen längst ner.</p>
 </section>
 <p class="sync" id="sync" role="status"></p>
 <div id="konflikt" hidden></div>
@@ -202,7 +204,7 @@ body.harspar main{padding-bottom:110px}
 <section id="shop" hidden aria-label="Inköpslista">
 <div class="shopin">
 <div class="shophead"><button id="shopback" class="ico" type="button" aria-label="Tillbaka till veckomenyn" title="Tillbaka"></button><h2>Inköpslista</h2></div>
-<p class="hint">Veckans ingredienser ihopslagna för 4 personer. Bocka av i affären. Dra i prickarna för att flytta ett kort, använd pennan för att ändra och papperskorgen för att ta bort. Ändringar sparas först när du trycker på Spara till GitHub.</p>
+<p class="hint">Veckans ingredienser ihopslagna för 4 personer. Bocka av i affären. Dra i prickarna för att flytta ett kort, använd pennan för att ändra och papperskorgen för att ta bort. Ändringar sparas automatiskt på GitHub.</p>
 <div id="shoplist"></div>
 <p id="shopempty" class="hint" hidden>Listan är tom. Tryck på plusknappen för att lägga till en vara.</p>
 <p id="shopmissing" hidden></p>
@@ -215,7 +217,7 @@ body.harspar main{padding-bottom:110px}
 <section id="editor" hidden>
 <div class="edhead"><h2>Redigera rätter</h2><button id="edclose" type="button">Stäng</button></div>
 <label for="vardag">Vardagsrätter</label>
-<p class="hint">En rätt per rad. Ändringarna sparas i veckomeny.json först när du trycker på Spara till GitHub längst ner.</p>
+<p class="hint">En rätt per rad. Ändringarna sparas i veckomeny.json automatiskt, eller med knappen Spara till GitHub om du har stängt av autospara.</p>
 <textarea id="vardag"></textarea>
 <label for="helg">Helg- och fredagsrätter</label>
 <textarea id="helg"></textarea>
@@ -310,7 +312,38 @@ function isDirty(){
 }
 function touch(){
   try{localStorage.setItem(KEY.utkast,stable(snapshot()))}catch(e){}
-  uppdateraSparfalt();
+  uppdateraSparfalt();planeraAutospar();
+}
+/* Autospara */
+let autoTimer=0,autoFel=null;
+const autoPa=()=>{try{return localStorage.getItem("autospara")!=="0"}catch(e){return true}};
+const autoAktiv=()=>autoPa()&&!!token&&!konflikt;
+function planeraAutospar(){
+  clearTimeout(autoTimer);autoTimer=0;
+  if(!autoAktiv()||laddar||week===null||!isDirty())return;
+  autoFel=null;uppdateraSparfalt();
+  autoTimer=setTimeout(tystSpara,3000);
+}
+async function tystSpara(){
+  clearTimeout(autoTimer);autoTimer=0;
+  if(!autoAktiv()||laddar||week===null||!isDirty())return;
+  if(sparar||synkar||$("sparDialog").open){autoTimer=setTimeout(tystSpara,1500);return}
+  sparar=true;uppdateraSparfalt();
+  try{
+    const r=await ghHamtaFil();
+    if(r.finns&&remote.sha!==r.sha&&!skrivOver){
+      sparar=false;
+      if(r.str===stable(snapshot())){remote={str:r.str,sha:r.sha};sparaCache();touch();return}
+      konflikt={str:r.str,sha:r.sha,snap:r.snap};konfliktBanner();uppdateraSparfalt();return;
+    }
+    const str=stable(snapshot()),res=await ghSkriv(r.finns?r.sha:null);
+    remote={str:str,sha:res.sha||null};sparaCache();
+    skrivOver=false;konflikt=null;filSaknas=false;konfliktBanner();sparar=false;autoFel=null;
+    uppdateraSync("Sparat automatiskt på GitHub "+klockan()+".");
+    touch();
+  }catch(e){
+    sparar=false;autoFel=ghFel(e)+" Dina ändringar finns kvar här.";uppdateraSparfalt();
+  }
 }
 function sparaCache(){try{localStorage.setItem(KEY.cache,JSON.stringify({str:remote.str,sha:remote.sha}))}catch(e){}}
 function uppdateraSync(text){$("sync").textContent=text||"";$("ghstatus").textContent=text||""}
@@ -319,8 +352,13 @@ function uppdateraSparfalt(){
   bar.hidden=!dirty;
   document.body.classList.toggle("harspar",dirty);
   if(!dirty)return;
-  const t=$("sparbar-text"),b=$("sparbar-knapp");
+  const t=$("sparbar-text"),b=$("sparbar-knapp");b.hidden=false;
   if(!token){t.textContent="Ändringarna finns bara på den här enheten.";b.textContent="Lägg in token"}
+  else if(konflikt){t.textContent="Väntar på ditt val av version högst upp på sidan.";b.hidden=true}
+  else if(autoPa()){
+    if(autoFel){t.textContent=autoFel;b.textContent="Försök igen"}
+    else{t.textContent="Sparar till GitHub…";b.hidden=true}
+  }
   else{t.textContent=remote.str===null?"Filen finns inte på GitHub ännu.":"Du har osparade ändringar.";b.textContent="Spara till GitHub"}
 }
 
@@ -415,7 +453,7 @@ function konfliktBanner(){
   });
   mk("Behåll mina ändringar",()=>{
     remote={str:konflikt.str,sha:konflikt.sha};sparaCache();
-    skrivOver=true;konflikt=null;konfliktBanner();uppdateraSparfalt();
+    skrivOver=true;konflikt=null;konfliktBanner();uppdateraSparfalt();planeraAutospar();
     $("msg").textContent="Dina ändringar behålls. De skriver över GitHubs version när du sparar.";
   });
   box.hidden=false;
@@ -505,7 +543,7 @@ async function dlgKor(){
     dlgResultat(false,"Det gick inte att spara",ghFel(e)+" Inget har ändrats på GitHub, och dina ändringar finns kvar här.");
   }
 }
-$("sparbar-knapp").onclick=oppnaSpar;
+$("sparbar-knapp").onclick=()=>{if(token&&autoPa()&&!konflikt){autoFel=null;uppdateraSparfalt();tystSpara()}else oppnaSpar()};
 
 /* Inställningar */
 function fyllGh(){
@@ -525,7 +563,7 @@ $("gh-spara").onclick=async()=>{
     save(KEY.cfg,cfg);
     try{if(t&&$("gh-kom").checked)localStorage.setItem(KEY.token,t);else localStorage.removeItem(KEY.token)}catch(e){}
     $("msg").textContent=!t?"Inställningarna är sparade. Utan token kan du bara läsa.":(info.permissions&&info.permissions.push===false?"Ansluten, men ditt konto har bara läsrätt till repot.":"Anslutningen fungerar. Du kan nu spara till GitHub.");
-    uppdateraSparfalt();synka(true);
+    uppdateraSparfalt();planeraAutospar();synka(true);
   }catch(e){
     cfg=gammalCfg;token=gammalToken;
     $("msg").textContent=e&&e.status?ghFel(e):"Kunde inte nå GitHub eller filen hade fel format.";
@@ -554,8 +592,14 @@ function start(){
   }
   if(snap)sattData(snap);else laddar=true;
   uppdateraAllt();uppdateraSparfalt();
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)synka(false)});
-  synka(true);
+  document.addEventListener("visibilitychange",()=>{if(document.hidden){if(autoTimer)tystSpara()}else synka(false)});
+  $("autospara").checked=autoPa();
+  $("autospara").onchange=()=>{
+    try{localStorage.setItem("autospara",$("autospara").checked?"1":"0")}catch(e){}
+    autoFel=null;clearTimeout(autoTimer);uppdateraSparfalt();planeraAutospar();
+    $("msg").textContent=$("autospara").checked?"Autospara är på.":"Autospara är av. Spara med knappen längst ner.";
+  };
+  synka(true);planeraAutospar();
 }
 function pick(i,used){
   const all=lists[kind(i)];
