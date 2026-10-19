@@ -258,7 +258,7 @@ body.harspar main{padding-bottom:110px}
 <dialog id="sparDialog" class="dialog" aria-label="Spara till GitHub"></dialog>
 <script>
 const DAGAR=["Måndag","Tisdag","Onsdag","Torsdag","Fredag","Lördag","Söndag"];
-const GRIP='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18" r="1.8"/><circle cx="15" cy="18" r="1.8"/></svg>';
+const GRIP='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">'+[6,12,18].map(y=>[6,12,18].map(x=>'<circle cx="'+x+'" cy="'+y+'" r="1.7"/>').join('')).join('')+'</svg>';
 const DEF={
 vardag:["Blodpudding med bacon och stekt ägg","Potatisbullar med bacon","Falukorv med makaroner/stuvade makaroner","Köttfärssås med spaghetti","Fiskpinnar med potatis/potatismos","Köttbullar med potatismos och gräddsås","Pasta med skinksås","Tjockpannkaka med bacon","Lax med potatis","Korvstroganoff med pasta eller ris","Kyckling med currysås och ris","Korv med bröd","Chicken nuggets med pommes eller ris"],
 helg:["Köttfärslimpa med potatis och sås","Pannbiff med potatis och stekt lök","Tacos","Hemgjord pizza","Pannkakor","Våfflor","Plättar"]};
