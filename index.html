@@ -100,6 +100,8 @@ body.visarshop{overflow:hidden}
 .fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));width:62px;height:62px;border-radius:50%;padding:0;background:var(--acc);color:var(--accink);border:0;box-shadow:0 8px 22px rgba(0,0,0,.3);display:grid;place-items:center;z-index:16}
 .fab svg{width:30px;height:30px;display:block}
 body.harspar .fab{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+.shoptom{margin:36px 0 32px;text-align:center;color:var(--mut);font-size:1.05rem}
+.shoptom[hidden]{display:none}
 #shopmsg{min-height:1.4em;color:var(--mut);margin:10px 0 0}
 .shopact{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:8px}
@@ -207,7 +209,8 @@ body.harspar main{padding-bottom:110px}
 <div class="shopin">
 <div class="shophead"><button id="shopback" class="ico" type="button" aria-label="Tillbaka till veckomenyn" title="Tillbaka"></button><h2>Inköpslista</h2></div>
 <div id="shoplist"></div>
-<div class="shopact"><button id="shopcopy" type="button">Kopiera listan</button><button id="shopshare" type="button">Dela listan</button><button id="shopclear" type="button">Avmarkera alla</button><button id="shopreset" type="button">Återställ listan</button></div>
+<p id="shoptom" class="shoptom" hidden>Listan är tom.<br>Tryck på +-knappen för att lägga till varor.</p>
+<div class="shopact"><button id="shopcopy" type="button">Kopiera listan</button><button id="shopshare" type="button">Dela listan</button><button id="shopclear" type="button">Avmarkera alla</button><button id="shopclearall" type="button">Töm listan</button><button id="shopreset" type="button">Återställ listan</button></div>
 <p id="shopmsg" role="status"></p>
 </div>
 <button class="fab" id="shopadd" type="button" aria-label="Lägg till vara" title="Lägg till vara"></button>
@@ -870,6 +873,7 @@ function renderShop(){
     acts.append(ed,del);
     k.append(gr,cb,t,acts);list.appendChild(k);
   });
+  $("shoptom").hidden=r.cards.length>0;$("shopclearall").disabled=!r.cards.length;
 }
 /* dra för att flytta */
 $("shoplist").addEventListener("pointerdown",e=>{
@@ -940,6 +944,12 @@ function oppnaLaggTill(){
 }
 $("shopadd").innerHTML=PLUS;$("shopback").innerHTML=BACK;
 $("shopadd").onclick=oppnaLaggTill;
+$("shopclearall").onclick=()=>{
+  const n=shopCards().cards.length;if(!n)return;
+  if(!confirm("Tömma hela inköpslistan? "+n+" varor tas bort. Veckans varor kan hämtas tillbaka med Återställ listan."))return;
+  inkop.egna=[];inkop.andrad={};inkop.ordning=[];inkop.borta=shopItems().items.map(i=>i.key);
+  checked=[];save("checked",checked);shopEdit=null;touch();renderShop();sag("Listan är tömd.");
+};
 $("shopreset").onclick=()=>{
   if(!confirm("Återställa inköpslistan? Egna varor, ändringar, borttagna varor och ordning försvinner."))return;
   inkop=tomInk();touch();renderShop();sag("Listan är återställd.");
