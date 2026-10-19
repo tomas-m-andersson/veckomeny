@@ -100,8 +100,9 @@ body.visarshop{overflow:hidden}
 .kort .acts .pm svg{width:20px;height:20px}
 .kort .acts .pm:disabled{opacity:.35}
 .kort .antal{min-width:44px;padding:0 4px;text-align:center;font-weight:700;white-space:nowrap}
-.kort .acts .pm.plus{margin-right:14px}
 .kort .antal.tom{font-weight:400;color:var(--mut)}
+@media (prefers-reduced-motion:no-preference){.kort .pm.pop,.kort .antal.pop{animation:popin .18s ease-out}}
+@keyframes popin{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 /* tydligare cirklar på knapparna i korten (veckomeny + inköpslista) */
 li .acts button.ico,li .acts button.edit,.kort .acts button{border:2px solid #8fa3b8;border-color:color-mix(in srgb,var(--ink) 38%,var(--card))}
 /* lite större knappar i inköpslistan */
@@ -855,6 +856,7 @@ function andraKort(c,text){
   else inkop.andrad[c.id]=text;
   touch();renderShop();
 }
+let popId=null;
 function antalSteg(q,g,d){
   if(g==="m")return q<100||(d<0&&q<=100)?10:q<1000||(d<0&&q<=1000)?50:100;
   if(g==="v")return q<100||(d<0&&q<=100)?10:100;
@@ -862,15 +864,16 @@ function antalSteg(q,g,d){
 }
 function andraAntal(c,d){
   const p=parseIng(c.text);if(!p)return;
-  let q=p.q,g=p.g;
-  if(q==null){if(d<0)return;q=1;g=""}
+  let q=p.q,g=p.g,ny;
+  if(q==null){if(d<0)return;ny="1 "+p.name;popId=c.id}
   else{
     const nq=Math.round((q+d*antalSteg(q,g,d))*100)/100;
-    if(nq<=0)return;q=nq;
+    ny=nq<=0?p.name:(qtyText({q:nq,g:g})+" "+p.name).trim();
   }
-  andraKort(c,(qtyText({q:q,g:g})+" "+p.name).trim());
-  const kort=[...$("shoplist").children].find(k=>k.dataset.id===c.id),b=kort&&kort.querySelector(d>0?".pm.plus":".pm.minus");
-  if(b&&!b.disabled)b.focus();
+  andraKort(c,ny.trim());
+  const kort=[...$("shoplist").children].find(k=>k.dataset.id===c.id);
+  const b=kort&&(d<0&&kort.querySelector(".pm.minus")||kort.querySelector(".pm.plus"));
+  if(b)b.focus();
 }
 function taBortKort(c){
   if(c.egen)inkop.egna=inkop.egna.filter(e=>e.id!==c.id);
@@ -913,14 +916,16 @@ function renderShop(){
     ed.setAttribute("aria-label","Ändra "+c.text);ed.title="Ändra";ed.onclick=()=>{shopEdit=c.id;renderShop()};
     const del=document.createElement("button");del.type="button";del.className="ico";del.innerHTML=TRASH;
     del.setAttribute("aria-label","Ta bort "+c.text);del.title="Ta bort";del.onclick=()=>taBortKort(c);
-    const mi=document.createElement("button");mi.type="button";mi.className="pm minus";mi.innerHTML=MINUSI;mi.title="Minska antal";
-    mi.setAttribute("aria-label","Minska antal för "+c.text);mi.disabled=!pq||pq.q==null||pq.q-antalSteg(pq.q,pq.g,-1)<=0;mi.onclick=()=>andraAntal(c,-1);
-    const lab=document.createElement("span");lab.className="antal"+(pq&&pq.q!=null?"":" tom");lab.textContent=pq&&pq.q!=null?qtyText(pq):"antal";
+    const harAntal=!!pq&&pq.q!=null,visaPop=c.id===popId;
+    const mi=document.createElement("button");mi.type="button";mi.className="pm minus"+(visaPop?" pop":"");mi.innerHTML=MINUSI;mi.title="Minska antal";
+    mi.setAttribute("aria-label","Minska antal för "+c.text);mi.onclick=()=>andraAntal(c,-1);
+    const lab=document.createElement("span");lab.className="antal"+(visaPop?" pop":"");lab.textContent=harAntal?qtyText(pq):"";
     const pl=document.createElement("button");pl.type="button";pl.className="pm plus";pl.innerHTML=PLUS;pl.title="Öka antal";
     pl.setAttribute("aria-label","Öka antal för "+c.text);pl.onclick=()=>andraAntal(c,1);
-    if(c.egen)acts.append(mi,lab,pl,ed,del);else acts.append(ed,del);
+    if(c.egen){if(harAntal)acts.append(mi,lab);acts.append(pl,ed,del)}else acts.append(ed,del);
     k.append(gr,cb,t,acts);list.appendChild(k);
   });
+  popId=null;
   $("shoptom").hidden=r.cards.length>0;$("shopclearall").disabled=!r.cards.length;
 }
 /* dra för att flytta */
