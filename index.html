@@ -134,7 +134,7 @@ select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid va
 :root{--danger:#b4232a}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--danger:#ff8a8f}}
 :root[data-theme="dark"]{--danger:#ff8a8f}
-.sync{color:var(--mut);font-size:.9rem;margin:0 0 14px}
+.sync{color:var(--mut);font-size:.9rem;margin:28px 0 0;text-align:center}
 .sync:empty{display:none}
 li.laddar{display:block;color:var(--mut);box-shadow:0 2px 0 var(--line)}
 input[type=text],input[type=password]{width:100%;font:inherit;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:10px 14px;display:block}
@@ -203,7 +203,6 @@ body.harspar main{padding-bottom:110px}
 <div class="hjalp"><button id="info" type="button" aria-expanded="false" aria-controls="infotext"></button><span>Så fungerar sidan</span></div>
 <p class="hjalptext" id="infotext" hidden>Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter. Dra i prickarna till vänster för att byta plats på två dagar. Med pennan skriver du en egen rätt för just den dagen. Dina ändringar sparas automatiskt i filen veckomeny.json på GitHub (om du har lagt in token), och alla som har appen ser dem när de öppnar den. Har du stängt av autospara sparar du med knappen längst ner.</p>
 </section>
-<p class="sync" id="sync" role="status"></p>
 <div id="konflikt" hidden></div>
 <div class="bar">
 <button class="main tb" id="gen" type="button" aria-label="Slumpa ny vecka" title="Slumpa ny vecka"></button>
@@ -243,6 +242,7 @@ body.harspar main{padding-bottom:110px}
 <p><button id="ingreset">Återställ alla ingredienser</button></p>
 <p><button id="reset">Återställ standardlistan</button></p>
 </section>
+<p class="sync" id="sync" role="status"></p>
 </main>
 <div id="sparbar" role="region" aria-label="Osparade ändringar" hidden><span id="sparbar-text"></span><button class="main" id="sparbar-knapp" type="button"></button></div>
 <dialog id="addDialog" class="dialog" aria-label="Lägg till vara"></dialog>
@@ -450,7 +450,7 @@ async function synka(manuell){
     const r=await ghHamtaFil();
     senastSynk=Date.now();
     hanteraRemote(r);
-    uppdateraSync(r.finns?"Hämtat från GitHub "+klockan()+".":"Ingen fil på GitHub ännu. Första sparningen skapar "+cfg.fil+".");
+    uppdateraSync(r.finns?"Synkat "+klockan():"Ingen fil på GitHub ännu. Första sparningen skapar "+cfg.fil+".");
   }catch(e){
     uppdateraSync(ghFel(e)+(week!==null?" Du ser den senast kända versionen.":""));
     if(laddar){laddar=false;if(week===null)startaMedStandard();else uppdateraAllt()}
