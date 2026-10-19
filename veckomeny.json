@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-19T19:18:43.686Z",
+  "uppdaterad": "2026-10-19T19:28:09.843Z",
   "vecka": [
     "Potatisbullar med bacon",
     "Falukorv med makaroner/stuvade makaroner",
@@ -217,12 +217,12 @@
       "msk|smör",
       "m|spaghetti",
       "m|strimlad skinka",
-      "msk|tomatpuré",
       "|sylt",
+      "msk|tomatpuré",
       "msk|vetemjöl",
       "v|vetemjöl",
-      "|vispgrädde",
-      "|ägg"
+      "|ägg",
+      "|vispgrädde"
     ]
   }
 }
