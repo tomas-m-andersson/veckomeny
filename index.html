@@ -645,7 +645,7 @@ function render(hit){
       r.onblur=()=>commitEdit(i,r.value);
       setTimeout(()=>{r.focus();r.select()},0);
     }else{r=document.createElement("div");r.className="ratt";r.textContent=d}
-    const b=document.createElement("button");b.className="ico";b.innerHTML=REFRESH;b.title="Byt rätt";
+    const b=document.createElement("button");b.className="ico";b.innerHTML=DICE;b.title="Byt rätt";
     b.setAttribute("aria-label","Byt rätt för "+DAGAR[i]);
     b.onclick=()=>swap(i);
     const lk=document.createElement("button");
