@@ -970,8 +970,10 @@ $("shopclearall").onclick=()=>{
   checked=[];save("checked",checked);shopEdit=null;touch();renderShop();sag("Listan är tömd.");
 };
 $("shopreset").onclick=()=>{
-  if(!confirm("Generera inköpslistan på nytt från veckomenyn? Egna varor, ändringar, borttagna varor och ordning försvinner."))return;
-  inkop=tomInk();touch();renderShop();sag("Listan är genererad från veckomenyn.");
+  const egna=inkop.egna.length;
+  if(!confirm("Generera inköpslistan på nytt från veckomenyn? "+(egna?"Dina "+egna+" egna varor ligger kvar. ":"")+"Ändringar och borttagningar av veckans varor och ordningen nollställs."))return;
+  inkop={egna:inkop.egna,andrad:{},borta:[],ordning:[]};touch();renderShop();
+  sag("Listan är genererad från veckomenyn."+(egna?" Dina egna varor ligger kvar.":""));
 };
 $("shopcopy").onclick=async()=>{
   try{await navigator.clipboard.writeText(shopText());sag("Inköpslistan är kopierad.")}
