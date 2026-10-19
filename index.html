@@ -894,6 +894,7 @@ function renderShop(){
     const cb=document.createElement("input");cb.type="checkbox";cb.checked=checked.includes(c.id);
     cb.setAttribute("aria-label","Bocka av "+c.text);
     cb.onchange=()=>{checked=cb.checked?checked.concat(c.id):checked.filter(x=>x!==c.id);save("checked",checked);k.classList.toggle("done",cb.checked)};
+    const pq=parseIng(c.text);
     let t;
     if(shopEdit===c.id){
       t=document.createElement("input");t.type="text";t.maxLength=200;t.value=c.text;t.className="ratt-in";
@@ -901,23 +902,22 @@ function renderShop(){
       let klar=false;
       t.onkeydown=ev=>{
         if(ev.key==="Enter"){ev.preventDefault();klar=true;andraKort(c,t.value)}
-        else if(ev.key==="Escape"){klar=true;shopEdit=null;renderShop()}
+        else if(ev.key==="Escape"){ev.stopPropagation();klar=true;shopEdit=null;renderShop()}
       };
       t.onblur=()=>{if(!klar)andraKort(c,t.value)};
       setTimeout(()=>{t.focus();t.select()},0);
-    }else{t=document.createElement("div");t.className="ktext";t.textContent=c.text}
+    }else{t=document.createElement("div");t.className="ktext";t.textContent=c.egen&&pq&&pq.q!=null?pq.name:c.text}
     const acts=document.createElement("div");acts.className="acts";
     const ed=document.createElement("button");ed.type="button";ed.className="edit";ed.innerHTML=PEN;
     ed.setAttribute("aria-label","Ändra "+c.text);ed.title="Ändra";ed.onclick=()=>{shopEdit=c.id;renderShop()};
     const del=document.createElement("button");del.type="button";del.className="ico";del.innerHTML=TRASH;
     del.setAttribute("aria-label","Ta bort "+c.text);del.title="Ta bort";del.onclick=()=>taBortKort(c);
-    const pq=parseIng(c.text);
     const mi=document.createElement("button");mi.type="button";mi.className="pm minus";mi.innerHTML=MINUSI;mi.title="Minska antal";
     mi.setAttribute("aria-label","Minska antal för "+c.text);mi.disabled=!pq||pq.q==null||pq.q-antalSteg(pq.q,pq.g,-1)<=0;mi.onclick=()=>andraAntal(c,-1);
     const lab=document.createElement("span");lab.className="antal"+(pq&&pq.q!=null?"":" tom");lab.textContent=pq&&pq.q!=null?qtyText(pq):"antal";
     const pl=document.createElement("button");pl.type="button";pl.className="pm plus";pl.innerHTML=PLUS;pl.title="Öka antal";
     pl.setAttribute("aria-label","Öka antal för "+c.text);pl.onclick=()=>andraAntal(c,1);
-    acts.append(mi,lab,pl,ed,del);
+    if(c.egen)acts.append(mi,lab,pl,ed,del);else acts.append(ed,del);
     k.append(gr,cb,t,acts);list.appendChild(k);
   });
   $("shoptom").hidden=r.cards.length>0;$("shopclearall").disabled=!r.cards.length;
