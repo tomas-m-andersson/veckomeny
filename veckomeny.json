@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-19T19:28:09.843Z",
+  "uppdaterad": "2026-10-19T19:28:21.525Z",
   "vecka": [
     "Potatisbullar med bacon",
     "Falukorv med makaroner/stuvade makaroner",
@@ -197,8 +197,7 @@
   "inkop": {
     "egna": [],
     "andrad": {},
-    "borta": [],
-    "ordning": [
+    "borta": [
       "m|bacon",
       "m|falukorv",
       "m|fiskpinnar",
@@ -221,8 +220,9 @@
       "msk|tomatpuré",
       "msk|vetemjöl",
       "v|vetemjöl",
-      "|ägg",
-      "|vispgrädde"
-    ]
+      "|vispgrädde",
+      "|ägg"
+    ],
+    "ordning": []
   }
 }
