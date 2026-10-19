@@ -86,12 +86,14 @@ body.visarshop{overflow:hidden}
 .shophead{display:flex;align-items:center;gap:12px;margin:0 0 8px}
 .shophead h2{margin:0;font-size:1.6rem;font-weight:800}
 #shop .hint{margin:0 0 12px}
-.kort{display:grid;grid-template-columns:32px 28px 1fr auto;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--acc);border-radius:12px;padding:8px 10px 8px 4px;margin-bottom:8px;position:relative}
+.kort{display:grid;grid-template-columns:32px 28px 1fr auto;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--acc);border-radius:12px;padding:6px 8px 6px 4px;margin-bottom:6px;position:relative}
 .kort.egen{border-left-color:var(--helg)}
 .kort input[type=checkbox]{width:24px;height:24px;accent-color:var(--acc);margin:0}
 .kort .ktext{font-size:1.05rem;overflow-wrap:anywhere}
 .kort.done .ktext{text-decoration:line-through;color:var(--mut)}
 .kort .acts button{padding:0}
+.kort .acts,.kort .ktext,.kort .ratt-in,.kort .grip,.kort input[type=checkbox]{grid-row:auto;grid-column:auto}
+.kort .acts{gap:4px}
 .kort.dragging{z-index:5;box-shadow:0 10px 26px rgba(0,0,0,.28);cursor:grabbing}
 .kort.flytt{transition:transform .15s}
 .fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));width:62px;height:62px;border-radius:50%;padding:0;background:var(--acc);color:var(--accink);border:0;box-shadow:0 8px 22px rgba(0,0,0,.3);display:grid;place-items:center;z-index:16}
