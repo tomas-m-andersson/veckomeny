@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-19T21:30:20.586Z",
+  "uppdaterad": "2026-10-19T21:30:35.753Z",
   "vecka": [
     "Potatisbullar med bacon",
     "Falukorv med makaroner/stuvade makaroner",
@@ -195,7 +195,12 @@
     ]
   },
   "inkop": {
-    "egna": [],
+    "egna": [
+      {
+        "id": "emvfrqb68piqt",
+        "text": "Mjöl"
+      }
+    ],
     "andrad": {},
     "borta": [],
     "ordning": []
