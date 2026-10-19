@@ -83,7 +83,7 @@ li:nth-child(1){--dc:#e5484d}li:nth-child(2){--dc:#f08a24}li:nth-child(3){--dc:#
 #shop[hidden]{display:none}
 .shopin{max-width:640px;margin:0 auto;padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
 body.visarshop{overflow:hidden}
-.shophead{display:flex;align-items:center;gap:12px;margin:0 0 8px}
+.shophead{display:flex;align-items:center;gap:12px;margin:0 0 14px}
 .shophead h2{margin:0;font-size:1.6rem;font-weight:800}
 #shop .hint{margin:0 0 12px}
 .kort{display:grid;grid-template-columns:32px 28px 1fr auto;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--acc);border-radius:12px;padding:6px 8px 6px 4px;margin-bottom:6px;position:relative}
@@ -101,7 +101,6 @@ body.visarshop{overflow:hidden}
 body.harspar .fab{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 #shopmsg{min-height:1.4em;color:var(--mut);margin:10px 0 0}
 .shopact{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-#shopmissing{color:var(--mut);font-size:.9rem;margin:12px 0 0}
 select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:8px}
 /* inställningsmeny */
 #settings,#theme,#info{width:44px;height:44px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none}
@@ -206,10 +205,7 @@ body.harspar main{padding-bottom:110px}
 <section id="shop" hidden aria-label="Inköpslista">
 <div class="shopin">
 <div class="shophead"><button id="shopback" class="ico" type="button" aria-label="Tillbaka till veckomenyn" title="Tillbaka"></button><h2>Inköpslista</h2></div>
-<p class="hint">Veckans ingredienser ihopslagna för 4 personer. Bocka av i affären. Dra i prickarna för att flytta ett kort, använd pennan för att ändra och papperskorgen för att ta bort. Ändringar sparas automatiskt på GitHub.</p>
 <div id="shoplist"></div>
-<p id="shopempty" class="hint" hidden>Listan är tom. Tryck på plusknappen för att lägga till en vara.</p>
-<p id="shopmissing" hidden></p>
 <div class="shopact"><button id="shopcopy" type="button">Kopiera listan</button><button id="shopshare" type="button">Dela listan</button><button id="shopclear" type="button">Avmarkera alla</button><button id="shopreset" type="button">Återställ listan</button></div>
 <p id="shopmsg" role="status"></p>
 </div>
@@ -873,9 +869,6 @@ function renderShop(){
     acts.append(ed,del);
     k.append(gr,cb,t,acts);list.appendChild(k);
   });
-  $("shopempty").hidden=r.cards.length>0;
-  const mi=$("shopmissing");mi.hidden=!r.missing.length;
-  mi.textContent=r.missing.length?"Saknar ingredienser: "+r.missing.join(", ")+". Lägg till dem under Redigera rätter.":"";
 }
 /* dra för att flytta */
 $("shoplist").addEventListener("pointerdown",e=>{
