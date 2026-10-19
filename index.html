@@ -112,6 +112,7 @@ body.harspar .fab{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 .shopact{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .shopact button{width:52px;height:52px;padding:0;display:grid;place-items:center;border-radius:50%;border:2px solid #8fa3b8;border-color:color-mix(in srgb,var(--ink) 38%,var(--card))}
 .shopact button svg{width:26px;height:26px;display:block}
+.shopgen{height:46px;padding:0 20px;margin:0 0 14px;border-radius:999px;border:2px solid #8fa3b8;border-color:color-mix(in srgb,var(--ink) 38%,var(--card));font-weight:600}
 select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:8px}
 /* inställningsmeny */
 #settings,#theme,#info{width:44px;height:44px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none}
@@ -215,6 +216,7 @@ body.harspar main{padding-bottom:110px}
 <section id="shop" hidden aria-label="Inköpslista">
 <div class="shopin">
 <div class="shophead"><button id="shopback" class="ico" type="button" aria-label="Tillbaka till veckomenyn" title="Tillbaka"></button><h2>Inköpslista</h2></div>
+<button id="shopreset" class="shopgen" type="button">Generera från veckomeny</button>
 <div id="shoplist"></div>
 <p id="shoptom" class="shoptom" hidden>Listan är tom.<br>Tryck på +-knappen för att lägga till varor.</p>
 <div class="shopact">
@@ -222,7 +224,6 @@ body.harspar main{padding-bottom:110px}
 <button id="shopshare" type="button" aria-label="Dela listan" title="Dela listan"></button>
 <button id="shopclear" type="button" aria-label="Avmarkera alla" title="Avmarkera alla"></button>
 <button id="shopclearall" type="button" aria-label="Töm listan" title="Töm listan"></button>
-<button id="shopreset" type="button" aria-label="Återställ listan" title="Återställ listan"></button>
 </div>
 <p id="shopmsg" role="status"></p>
 </div>
@@ -960,7 +961,7 @@ function oppnaLaggTill(){
   rad.append(klar,add);d.append(h,inp,st,rad);d.showModal();inp.focus();
 }
 $("shopadd").innerHTML=PLUS;$("shopback").innerHTML=BACK;
-$("shopcopy").innerHTML=COPYI;$("shopshare").innerHTML=SHARE;$("shopclear").innerHTML=MINUSBOX;$("shopclearall").innerHTML=TRASH;$("shopreset").innerHTML=RESETI;
+$("shopcopy").innerHTML=COPYI;$("shopshare").innerHTML=SHARE;$("shopclear").innerHTML=MINUSBOX;$("shopclearall").innerHTML=TRASH;
 $("shopadd").onclick=oppnaLaggTill;
 $("shopclearall").onclick=()=>{
   const n=shopCards().cards.length;if(!n)return;
@@ -969,8 +970,8 @@ $("shopclearall").onclick=()=>{
   checked=[];save("checked",checked);shopEdit=null;touch();renderShop();sag("Listan är tömd.");
 };
 $("shopreset").onclick=()=>{
-  if(!confirm("Återställa inköpslistan? Egna varor, ändringar, borttagna varor och ordning försvinner."))return;
-  inkop=tomInk();touch();renderShop();sag("Listan är återställd.");
+  if(!confirm("Generera inköpslistan på nytt från veckomenyn? Egna varor, ändringar, borttagna varor och ordning försvinner."))return;
+  inkop=tomInk();touch();renderShop();sag("Listan är genererad från veckomenyn.");
 };
 $("shopcopy").onclick=async()=>{
   try{await navigator.clipboard.writeText(shopText());sag("Inköpslistan är kopierad.")}
