@@ -50,9 +50,9 @@ li .acts button.ico,li .acts button.edit{padding:0}
 .ratt-in{font:inherit;width:100%;min-width:0;padding:8px 10px;border:2px solid var(--acc);border-radius:8px;background:var(--bg);color:var(--ink)}
 button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 button:disabled{opacity:.45;cursor:default}
-#incoming{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:2px solid var(--acc);border-radius:12px;padding:12px 14px;margin-bottom:18px}
-#incoming[hidden]{display:none}
-#incoming p{flex:1 1 100%;margin:0}
+#konflikt{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:2px solid var(--acc);border-radius:12px;padding:12px 14px;margin-bottom:18px}
+#konflikt[hidden]{display:none}
+#konflikt p{flex:1 1 100%;margin:0}
 .grip{width:32px;height:40px;padding:0;border:0;background:none;color:var(--mut);cursor:grab;touch-action:none;display:grid;place-items:center}
 .grip:disabled{opacity:.3;cursor:default}
 li.dragging{position:relative;z-index:5;box-shadow:0 10px 26px rgba(0,0,0,.28);transition:none;cursor:grabbing}
@@ -104,6 +104,40 @@ select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid va
 #editor[hidden]{display:none}
 .edhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
 #editor h2{margin:0;font-size:1.3rem}
+
+/* ===== Spara till GitHub ===== */
+:root{--danger:#b4232a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--danger:#ff8a8f}}
+:root[data-theme="dark"]{--danger:#ff8a8f}
+.sync{color:var(--mut);font-size:.9rem;margin:0 0 14px}
+.sync:empty{display:none}
+li.laddar{display:block;color:var(--mut);box-shadow:0 2px 0 var(--line)}
+input[type=text],input[type=password]{width:100%;font:inherit;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:10px 14px;display:block}
+input[type=text]:focus-visible,input[type=password]:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.rad{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 14px}
+.kryss{display:flex;align-items:center;gap:10px;margin:16px 0 0}
+.kryss input{width:22px;height:22px;accent-color:var(--acc);margin:0}
+.atgarder{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.meny details{margin-top:12px;padding-top:12px}
+.menystatus{margin:0 0 6px;font-weight:600}
+#konflikt p{font-weight:600}
+#konflikt .liten{font-weight:400;color:var(--mut);font-size:.92rem}
+#sparbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:25;width:min(92vw,560px);display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--ink);color:var(--bg);padding:8px 8px 8px 20px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#sparbar[hidden]{display:none}
+#sparbar span{font-weight:600;line-height:1.25}
+#sparbar button{flex:none}
+body.harspar main{padding-bottom:110px}
+.dialog{border:0;border-radius:20px;padding:20px;width:min(92vw,440px);background:var(--card);color:var(--ink);box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.dialog::backdrop{background:rgba(0,0,0,.5)}
+.dialog h2{margin:0 0 10px;font-size:1.25rem}
+.dialog h3{margin:14px 0 4px;font-size:1rem}
+.dialog p{margin:0 0 10px}
+.dialog ul{display:block;list-style:disc;padding-left:20px;margin:0 0 12px}
+.dialog li{display:list-item;border:0;border-radius:0;box-shadow:none;background:none;padding:2px 0}
+.dialog .knappar{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
+.dialog .varning{background:var(--helg);color:var(--helgink);border-radius:14px;padding:10px 14px;font-weight:600}
+.fara{color:var(--danger);font-weight:700}
+.dialog a{color:var(--acc);font-weight:600}
 </style>
 </head>
 <body>
@@ -114,15 +148,39 @@ select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid va
 <div class="hjalp"><button id="theme" type="button"></button><span id="theme-text"></span></div>
 <h2>Rätter</h2>
 <div class="val"><button id="edopen" type="button">Redigera rätter</button></div>
+<h2>Spara till GitHub</h2>
+<p class="menystatus" id="ghstatus"></p>
+<p class="hint">Veckomenyn, lås, rättslistor och ingredienser sparas i filen veckomeny.json i ditt GitHub-repo. Därför ser du och din fru samma sak, utan länkar. Varje sparning skriver över filen och blir en egen version i GitHub som går att ångra.</p>
+<div class="val"><button id="ghhamta" type="button">Hämta senaste från GitHub</button></div>
+<details id="ghbox">
+<summary>Inställningar och token</summary>
+<p class="hint">Skapa en "fine-grained personal access token" på github.com (Settings, Developer settings), välj bara repot veckomeny och ge den behörigheten Contents: Read and write. Klistra in den här.</p>
+<label for="gh-agare">Användarnamn på GitHub</label>
+<input type="text" id="gh-agare" autocomplete="off" autocapitalize="off" spellcheck="false">
+<label for="gh-repo">Repo</label>
+<input type="text" id="gh-repo" autocomplete="off" autocapitalize="off" spellcheck="false">
+<div class="rad">
+<div><label for="gh-gren">Branch</label><input type="text" id="gh-gren" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+<div><label for="gh-fil">Filnamn</label><input type="text" id="gh-fil" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+</div>
+<label for="gh-token">Token</label>
+<input type="password" id="gh-token" autocomplete="off" autocapitalize="off" spellcheck="false">
+<label class="kryss"><input type="checkbox" id="gh-kom" checked> Kom ihåg token på den här enheten</label>
+<p class="hint">Token sparas bara i webbläsaren på den här enheten, aldrig i repot. Den som har token kan ändra filerna i repot, så dela den inte.</p>
+<div class="atgarder">
+<button class="main" id="gh-spara" type="button">Spara inställningar</button>
+<button id="gh-glom" type="button">Ta bort token</button>
+</div>
+</details>
 <h2>Hjälp</h2>
 <div class="hjalp"><button id="info" type="button" aria-expanded="false" aria-controls="infotext"></button><span>Så fungerar sidan</span></div>
-<p class="hjalptext" id="infotext" hidden>Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter. Dra i prickarna till vänster för att byta plats på två dagar. Med pennan skriver du en egen rätt för just den dagen.</p>
+<p class="hjalptext" id="infotext" hidden>Måndag till torsdag väljs ur vardagsrätter. Fredag till söndag väljs ur helgrätter. Dra i prickarna till vänster för att byta plats på två dagar. Med pennan skriver du en egen rätt för just den dagen. Dina ändringar sparas först när du trycker på Spara till GitHub längst ner. Då hamnar de i filen veckomeny.json, och alla som har appen ser dem när de öppnar den.</p>
 </section>
-<div id="incoming" hidden></div>
+<p class="sync" id="sync" role="status"></p>
+<div id="konflikt" hidden></div>
 <div class="bar">
 <button class="main" id="gen">Slumpa ny vecka</button>
 <button id="lockall"></button>
-<button id="share">Dela veckan</button>
 <button id="copy">Kopiera menyn</button>
 <button id="shopbtn" aria-expanded="false" aria-controls="shop">Inköpslista</button>
 </div>
@@ -139,7 +197,7 @@ select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid va
 <section id="editor" hidden>
 <div class="edhead"><h2>Redigera rätter</h2><button id="edclose" type="button">Stäng</button></div>
 <label for="vardag">Vardagsrätter</label>
-<p class="hint">En rätt per rad. Sparas automatiskt i den här webbläsaren.</p>
+<p class="hint">En rätt per rad. Ändringarna sparas i veckomeny.json först när du trycker på Spara till GitHub längst ner.</p>
 <textarea id="vardag"></textarea>
 <label for="helg">Helg- och fredagsrätter</label>
 <textarea id="helg"></textarea>
@@ -148,9 +206,11 @@ select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid va
 <select id="ingdish"></select>
 <textarea id="ingtext" aria-label="Ingredienser för vald rätt"></textarea>
 <p><button id="ingreset">Återställ alla ingredienser</button></p>
-<p><button id="sharelist">Dela rättslistan</button> <button id="reset">Återställ min ursprungliga lista</button></p>
+<p><button id="reset">Återställ standardlistan</button></p>
 </section>
 </main>
+<div id="sparbar" role="region" aria-label="Osparade ändringar" hidden><span id="sparbar-text"></span><button class="main" id="sparbar-knapp" type="button"></button></div>
+<dialog id="sparDialog" class="dialog" aria-label="Spara till GitHub"></dialog>
 <script>
 const DAGAR=["Måndag","Tisdag","Onsdag","Torsdag","Fredag","Lördag","Söndag"];
 const GRIP='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18" r="1.8"/><circle cx="15" cy="18" r="1.8"/></svg>';
@@ -159,9 +219,9 @@ vardag:["Blodpudding med bacon och stekt ägg","Potatisbullar med bacon","Faluko
 helg:["Köttfärslimpa med potatis och sås","Pannbiff med potatis och stekt lök","Tacos","Hemgjord pizza","Pannkakor","Våfflor","Plättar"]};
 function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-let lists=load("lists")||JSON.parse(JSON.stringify(DEF));
+let lists=JSON.parse(JSON.stringify(DEF));
 const DEFING={"Blodpudding med bacon och stekt ägg":["600 g blodpudding","200 g bacon","4 st ägg","lingonsylt"],"Potatisbullar med bacon":["600 g potatisbullar","200 g bacon","lingonsylt"],"Falukorv med makaroner/stuvade makaroner":["600 g falukorv","300 g makaroner","5 dl mjölk","3 msk vetemjöl","2 msk smör"],"Köttfärssås med spaghetti":["500 g köttfärs","400 g spaghetti","1 burk krossade tomater","1 st gul lök","2 st morötter","2 msk tomatpuré"],"Fiskpinnar med potatis/potatismos":["600 g fiskpinnar","1 kg potatis","2 dl mjölk","2 msk smör","250 g frysta ärtor"],"Köttbullar med potatismos och gräddsås":["500 g köttfärs","1 st ägg","1 dl ströbröd","1 st gul lök","1 kg potatis","2 dl matlagningsgrädde","2 dl mjölk","2 msk smör","1 st buljongtärning","lingonsylt"],"Pasta med skinksås":["300 g pasta","200 g skinka","2 dl matlagningsgrädde","100 g riven ost"],"Tjockpannkaka med bacon":["3 dl vetemjöl","6 dl mjölk","3 st ägg","200 g bacon","lingonsylt"],"Lax med potatis":["500 g laxfilé","1 kg potatis","1 st citron","2 dl crème fraiche"],"Korvstroganoff med pasta eller ris":["600 g falukorv","1 st gul lök","3 msk tomatpuré","2 msk ketchup","2 dl matlagningsgrädde","4 dl ris"],"Kyckling med currysås och ris":["600 g kycklingfilé","1 st gul lök","2 msk currypulver","3 dl matlagningsgrädde","4 dl ris"],"Korv med bröd":["8 st korv","8 st korvbröd","ketchup"],"Chicken nuggets med pommes eller ris":["600 g kycklingnuggets","800 g pommes frites","1 st gurka","ketchup"],"Köttfärslimpa med potatis och sås":["600 g köttfärs","1 st ägg","1 dl ströbröd","1 dl mjölk","1 st gul lök","1 kg potatis","2 dl matlagningsgrädde","1 st buljongtärning","lingonsylt"],"Pannbiff med potatis och stekt lök":["600 g köttfärs","1 st ägg","1 dl ströbröd","1 dl mjölk","3 st gul lök","1 kg potatis","2 msk smör","lingonsylt"],"Tacos":["500 g köttfärs","1 förp tacokrydda","1 förp tacoskal","1 st gurka","3 st tomat","150 g riven ost","2 dl crème fraiche"],"Hemgjord pizza":["5 dl vetemjöl","25 g jäst","1 burk krossade tomater","200 g skinka","250 g riven ost"],"Pannkakor":["3 dl vetemjöl","5 dl mjölk","3 st ägg","2 msk smör","sylt"],"Våfflor":["3 dl vetemjöl","4 dl mjölk","2 st ägg","100 g smör","2 dl vispgrädde","sylt"],"Plättar":["3 dl vetemjöl","6 dl mjölk","3 st ägg","2 msk smör","sylt"]};
-let ings=load("ings")||JSON.parse(JSON.stringify(DEFING));
+let ings=JSON.parse(JSON.stringify(DEFING));
 let checked=load("checked")||[];
 let editing=null;
 const IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
@@ -169,11 +229,301 @@ const LOCK=IC+'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V
 const UNLOCK=IC+'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>';
 const REFRESH=IC+'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
 const PEN='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
-let week=load("week");
-let locks=load("locks");
-if(!Array.isArray(locks)||locks.length!==7)locks=Array(7).fill(false);
+let week=null;
+let locks=Array(7).fill(false);
 const $=id=>document.getElementById(id);
 const kind=i=>i>=4?"helg":"vardag";
+
+/* ===== Data och GitHub ===== */
+function standardKonf(){
+  let agare="tomas-m-andersson",repo="veckomeny";
+  const m=location.hostname.match(/^([^.]+)\.github\.io$/i);
+  if(m){agare=m[1];const p=location.pathname.split("/").filter(Boolean)[0];if(p&&p.indexOf(".")<0)repo=p}
+  return{agare:agare,repo:repo,gren:"main",fil:"veckomeny.json"};
+}
+const KEY={cfg:"gh",token:"ghtoken",cache:"cache",utkast:"utkast"};
+let cfg=standardKonf();
+(function(){const c=load(KEY.cfg);if(c&&c.agare&&c.repo)cfg={agare:c.agare,repo:c.repo,gren:c.gren||"main",fil:c.fil||"veckomeny.json"}})();
+let token="";try{token=localStorage.getItem(KEY.token)||""}catch(e){}
+let remote={str:null,sha:null};
+let filSaknas=false,laddar=false,konflikt=null,skrivOver=false,senastSynk=0,synkar=false,sparar=false;
+const klon=o=>JSON.parse(JSON.stringify(o));
+const klockan=()=>new Date().toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
+
+function snapshot(){return{vecka:week,las:locks,ratter:lists,ingredienser:ings}}
+function stable(o){return JSON.stringify(o,(k,v)=>v&&typeof v==="object"&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v)}
+function rena(o){
+  if(!o||typeof o!=="object")return null;
+  const t=x=>typeof x==="string"?x.trim().slice(0,200):"";
+  const arr=a=>Array.isArray(a)?a.map(t).filter(Boolean).slice(0,300):[];
+  const r=o.ratter&&typeof o.ratter==="object"?o.ratter:{};
+  const ing={};
+  if(o.ingredienser&&typeof o.ingredienser==="object")Object.keys(o.ingredienser).slice(0,600).forEach(k=>{const kk=t(k);if(kk)ing[kk]=arr(o.ingredienser[k])});
+  return{
+    vecka:Array.isArray(o.vecka)&&o.vecka.length===7&&o.vecka.every(x=>typeof x==="string")?o.vecka.map(t):null,
+    las:Array.isArray(o.las)&&o.las.length===7?o.las.map(Boolean):Array(7).fill(false),
+    ratter:{vardag:arr(r.vardag),helg:arr(r.helg)},
+    ingredienser:ing
+  };
+}
+function sattData(snap){week=snap.vecka;locks=snap.las;lists=snap.ratter;ings=snap.ingredienser}
+function fyllTextrutor(){["vardag","helg"].forEach(k=>{$(k).value=lists[k].join("\n")});fitAll()}
+function uppdateraAllt(){fyllTextrutor();render()}
+function visaLaddar(){const ul=$("week");ul.textContent="";const li=document.createElement("li");li.className="laddar";li.textContent="Hämtar veckomenyn från GitHub…";ul.appendChild(li)}
+function startaMedStandard(){laddar=false;lists=klon(DEF);ings=klon(DEFING);locks=Array(7).fill(false);week=null;fyllTextrutor();gen()}
+
+function isDirty(){
+  if(week===null)return false;
+  if(remote.str===null)return true;
+  return stable(snapshot())!==remote.str;
+}
+function touch(){
+  try{localStorage.setItem(KEY.utkast,stable(snapshot()))}catch(e){}
+  uppdateraSparfalt();
+}
+function sparaCache(){try{localStorage.setItem(KEY.cache,JSON.stringify({str:remote.str,sha:remote.sha}))}catch(e){}}
+function uppdateraSync(text){$("sync").textContent=text||"";$("ghstatus").textContent=text||""}
+function uppdateraSparfalt(){
+  const dirty=isDirty()&&!laddar,bar=$("sparbar");
+  bar.hidden=!dirty;
+  document.body.classList.toggle("harspar",dirty);
+  if(!dirty)return;
+  const t=$("sparbar-text"),b=$("sparbar-knapp");
+  if(!token){t.textContent="Ändringarna finns bara på den här enheten.";b.textContent="Lägg in token"}
+  else{t.textContent=remote.str===null?"Filen finns inte på GitHub ännu.":"Du har osparade ändringar.";b.textContent="Spara till GitHub"}
+}
+
+/* GitHub-anrop */
+function ghUrl(){return"https://api.github.com/repos/"+encodeURIComponent(cfg.agare)+"/"+encodeURIComponent(cfg.repo)+"/contents/"+cfg.fil.split("/").map(encodeURIComponent).join("/")}
+function ghHeaders(){const h={"Accept":"application/vnd.github+json"};if(token)h["Authorization"]="Bearer "+token;return h}
+function tillB64(str){const b=new TextEncoder().encode(str);let bin="";b.forEach(x=>{bin+=String.fromCharCode(x)});return btoa(bin)}
+function franB64(b){const bin=atob(b.replace(/\s/g,"")),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u)}
+function ghFel(e){
+  if(e&&e.format)return"Filen på GitHub har ett oväntat format.";
+  if(e&&e.status===401)return"GitHub godtog inte token. Skapa en ny token och klistra in den under Spara till GitHub.";
+  if(e&&e.status===403)return token?"GitHub nekade. Kontrollera att token har Contents: Read and write för just det här repot.":"GitHub nekade. Utan token får man bara göra några få anrop per timme. Lägg in din token under Spara till GitHub.";
+  if(e&&e.status===404)return"Hittar inte repot. Kontrollera användarnamn, repo och token under Spara till GitHub.";
+  if(e&&(e.status===409||e.status===422))return"Någon har hunnit spara en annan version. Hämta senaste och försök igen.";
+  return"Kunde inte nå GitHub. Kontrollera uppkopplingen.";
+}
+async function ghHamtaFil(){
+  const r=await fetch(ghUrl()+"?ref="+encodeURIComponent(cfg.gren)+"&_="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
+  if(r.status===404)return{finns:false};
+  if(!r.ok){const e=new Error("GitHub "+r.status);e.status=r.status;throw e}
+  const j=await r.json();
+  let snap=null;
+  try{snap=rena(JSON.parse(franB64(j.content||"")))}catch(e){}
+  if(!snap){const e=new Error("format");e.format=true;throw e}
+  return{finns:true,sha:j.sha,snap:snap,str:stable(snap)};
+}
+function filText(){
+  const s=snapshot();
+  return JSON.stringify({format:1,uppdaterad:new Date().toISOString(),vecka:s.vecka,las:s.las,ratter:s.ratter,ingredienser:s.ingredienser},null,2)+"\n";
+}
+async function ghSkriv(sha){
+  const body={message:"Uppdatera veckomeny (från appen)",content:tillB64(filText()),branch:cfg.gren};
+  if(sha)body.sha=sha;
+  const h=ghHeaders();h["Content-Type"]="application/json";
+  const r=await fetch(ghUrl(),{method:"PUT",headers:h,body:JSON.stringify(body)});
+  if(!r.ok){const e=new Error("GitHub "+r.status);e.status=r.status;throw e}
+  const j=await r.json();
+  return{sha:j.content&&j.content.sha,url:j.commit&&j.commit.html_url,skapad:r.status===201};
+}
+
+/* Synk */
+function hanteraRemote(r){
+  const wasDirty=isDirty();
+  if(r.finns){
+    filSaknas=false;
+    if(!wasDirty&&week!==null&&remote.sha===r.sha){laddar=false;return}
+    if(!wasDirty||week===null){
+      if(editing!==null||drag)return;
+      if(JSON.stringify(week)!==JSON.stringify(r.snap.vecka)){checked=[];save("checked",checked)}
+      sattData(r.snap);remote={str:r.str,sha:r.sha};sparaCache();
+      laddar=false;konflikt=null;skrivOver=false;
+      touch();uppdateraAllt();konfliktBanner();
+      return;
+    }
+    if(remote.sha===r.sha)return;
+    if(stable(snapshot())===r.str){remote={str:r.str,sha:r.sha};sparaCache();touch();return}
+    konflikt={str:r.str,sha:r.sha,snap:r.snap};konfliktBanner();
+  }else{
+    filSaknas=true;
+    if(remote.sha!==null||remote.str!==null){remote={str:null,sha:null};sparaCache()}
+    if(laddar){laddar=false;if(week===null)startaMedStandard();else uppdateraAllt()}
+    uppdateraSparfalt();
+  }
+}
+async function synka(manuell){
+  if(synkar||sparar)return;
+  if(!manuell&&Date.now()-senastSynk<60000)return;
+  if($("sparDialog").open&&!manuell)return;
+  synkar=true;uppdateraSync("Hämtar från GitHub…");
+  try{
+    const r=await ghHamtaFil();
+    senastSynk=Date.now();
+    hanteraRemote(r);
+    uppdateraSync(r.finns?"Hämtat från GitHub "+klockan()+".":"Ingen fil på GitHub ännu. Första sparningen skapar "+cfg.fil+".");
+  }catch(e){
+    uppdateraSync(ghFel(e)+(week!==null?" Du ser den senast kända versionen.":""));
+    if(laddar){laddar=false;if(week===null)startaMedStandard();else uppdateraAllt()}
+  }
+  synkar=false;
+}
+function konfliktBanner(){
+  const box=$("konflikt");box.textContent="";
+  if(!konflikt){box.hidden=true;return}
+  const mk=(t,f)=>{const b=document.createElement("button");b.type="button";b.textContent=t;b.onclick=f;box.appendChild(b)};
+  const p=document.createElement("p");p.textContent="Versionen på GitHub skiljer sig från den du har här. Vilken vill du använda?";box.appendChild(p);
+  const p2=document.createElement("p");p2.className="liten";p2.textContent="Väljer du GitHubs version försvinner dina osparade ändringar på den här enheten. Väljer du dina egna skrivs GitHubs version över när du sparar.";box.appendChild(p2);
+  mk("Använd GitHubs version",()=>{
+    sattData(konflikt.snap);remote={str:konflikt.str,sha:konflikt.sha};sparaCache();
+    konflikt=null;skrivOver=false;checked=[];save("checked",checked);
+    touch();uppdateraAllt();konfliktBanner();
+    $("msg").textContent="Du använder nu GitHubs version.";
+  });
+  mk("Behåll mina ändringar",()=>{
+    remote={str:konflikt.str,sha:konflikt.sha};sparaCache();
+    skrivOver=true;konflikt=null;konfliktBanner();uppdateraSparfalt();
+    $("msg").textContent="Dina ändringar behålls. De skriver över GitHubs version när du sparar.";
+  });
+  box.hidden=false;
+}
+
+/* Sparflöde med bekräftelser */
+const dlg=$("sparDialog");
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function dlgKnapp(text,fn,main){const b=el("button",main?"main":"",text);b.type="button";b.onclick=fn;return b}
+function dlgByt(noder){dlg.textContent="";noder.forEach(n=>dlg.appendChild(n));if(!dlg.open)dlg.showModal()}
+function dlgStang(){if(dlg.open)dlg.close()}
+function andringar(){
+  const nu=snapshot();
+  let g=null;try{g=remote.str?JSON.parse(remote.str):null}catch(e){}
+  const rad=[];
+  if(!g){
+    rad.push("Skapar en ny fil med veckans meny, "+nu.ratter.vardag.length+" vardagsrätter, "+nu.ratter.helg.length+" helgrätter och ingredienser för "+Object.keys(nu.ingredienser).length+" rätter.");
+    return rad;
+  }
+  nu.vecka.forEach((d,i)=>{const gd=g.vecka&&g.vecka[i];if(gd!==d)rad.push(DAGAR[i]+": "+(gd?gd+" → ":"")+d)});
+  const las=DAGAR.filter((_,i)=>nu.las[i]!==(g.las?!!g.las[i]:false));
+  if(las.length)rad.push("Lås ändrat: "+las.join(", "));
+  [["vardag","Vardagsrätter"],["helg","Helgrätter"]].forEach(([k,namn])=>{
+    const a=new Set(g.ratter[k]),b=new Set(nu.ratter[k]);
+    const nya=nu.ratter[k].filter(x=>!a.has(x)),borta=g.ratter[k].filter(x=>!b.has(x));
+    if(nya.length)rad.push(namn+" tillagda: "+nya.join(", "));
+    if(borta.length)rad.push(namn+" borttagna: "+borta.join(", "));
+  });
+  const ik=Object.keys(nu.ingredienser).filter(k=>stable(nu.ingredienser[k])!==stable(g.ingredienser[k]||null)).concat(Object.keys(g.ingredienser).filter(k=>!(k in nu.ingredienser)));
+  if(ik.length)rad.push("Ingredienser ändrade för: "+ik.slice(0,6).join(", ")+(ik.length>6?" och "+(ik.length-6)+" till":""));
+  if(!rad.length)rad.push("Små ändringar i filen.");
+  return rad;
+}
+function oppnaInstallningar(text){
+  const m=$("meny");m.hidden=false;
+  $("settings").setAttribute("aria-expanded","true");$("settings").setAttribute("aria-label","Stäng menyn");
+  $("ghbox").open=true;
+  if(text)$("msg").textContent=text;
+  m.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function oppnaSpar(){
+  if(!token){oppnaInstallningar("Lägg in din token för att kunna spara till GitHub.");return}
+  if(!isDirty()){$("msg").textContent="Det finns inget att spara.";return}
+  steg1();
+}
+function steg1(){
+  const lista=el("ul");andringar().forEach(t=>lista.appendChild(el("li","",t)));
+  const rad=el("div","knappar");rad.append(dlgKnapp("Avbryt",dlgStang),dlgKnapp("Fortsätt",steg2,true));
+  dlgByt([el("h2","","Spara till GitHub?"),
+    el("p","","Du är på väg att ändra filen "+cfg.fil+" i repot "+cfg.agare+"/"+cfg.repo+" (gren "+cfg.gren+")."),
+    el("h3","","Det här ändras"),lista,
+    el("p","varning","Alla som använder appen ser den nya versionen nästa gång de öppnar den. Varje sparning blir en egen version i GitHub som går att ångra."),rad]);
+}
+function steg2(){
+  const rad=el("div","knappar");rad.append(dlgKnapp("Tillbaka",steg1),dlgKnapp("Ja, spara till GitHub",dlgKor,true));
+  const n=[el("h2","","Är du helt säker?"),el("p","","Filen "+cfg.fil+" skrivs över på GitHub direkt när du trycker på Ja. Det här är sista chansen att avbryta.")];
+  if(skrivOver)n.push(el("p","fara","Du skriver över en nyare version som någon annan har sparat."));
+  n.push(rad);dlgByt(n);
+}
+function dlgResultat(ok,rubrik,text,url){
+  const rad=el("div","knappar");rad.append(dlgKnapp("Stäng",dlgStang,true));
+  const n=[el("h2",ok?"":"fara",rubrik),el("p","",text)];
+  if(url){const p=el("p");const a=el("a","","Visa versionen på GitHub");a.href=url;a.target="_blank";a.rel="noopener";p.appendChild(a);n.push(p)}
+  n.push(rad);dlgByt(n);
+}
+async function dlgKor(){
+  sparar=true;
+  dlgByt([el("h2","","Sparar…"),el("p","","Skriver till GitHub. Stäng inte appen.")]);
+  try{
+    const r=await ghHamtaFil();
+    if(r.finns&&remote.sha!==r.sha&&!skrivOver){
+      sparar=false;
+      if(r.str===stable(snapshot())){remote={str:r.str,sha:r.sha};sparaCache();touch();dlgResultat(true,"Redan sparat","Någon har redan sparat exakt de här ändringarna.");return}
+      konflikt={str:r.str,sha:r.sha,snap:r.snap};konfliktBanner();
+      dlgResultat(false,"Inget sparades","Någon har hunnit spara en nyare version på GitHub sedan du hämtade den. Stäng den här rutan och välj i rutan på sidan vilken version du vill använda.");
+      return;
+    }
+    const res=await ghSkriv(r.finns?r.sha:null);
+    remote={str:stable(snapshot()),sha:res.sha||null};sparaCache();
+    skrivOver=false;konflikt=null;filSaknas=false;konfliktBanner();sparar=false;
+    touch();uppdateraSync("Sparat på GitHub "+klockan()+".");
+    dlgResultat(true,res.skapad?"Filen skapades":"Sparat",(res.skapad?"Filen "+cfg.fil+" har skapats i repot. ":"Filen "+cfg.fil+" är uppdaterad på GitHub. ")+"Din fru ser ändringen nästa gång hon öppnar appen.",res.url);
+  }catch(e){
+    sparar=false;
+    dlgResultat(false,"Det gick inte att spara",ghFel(e)+" Inget har ändrats på GitHub, och dina ändringar finns kvar här.");
+  }
+}
+$("sparbar-knapp").onclick=oppnaSpar;
+
+/* Inställningar */
+function fyllGh(){
+  $("gh-agare").value=cfg.agare;$("gh-repo").value=cfg.repo;$("gh-gren").value=cfg.gren;$("gh-fil").value=cfg.fil;
+  $("gh-token").value=token;
+}
+$("gh-spara").onclick=async()=>{
+  const a=$("gh-agare").value.trim(),r=$("gh-repo").value.trim(),g=$("gh-gren").value.trim()||"main",f=$("gh-fil").value.trim()||"veckomeny.json",t=$("gh-token").value.trim();
+  if(!a||!r){$("msg").textContent="Fyll i användarnamn och repo.";return}
+  const gammalCfg=cfg,gammalToken=token;
+  cfg={agare:a,repo:r,gren:g,fil:f};token=t;
+  try{
+    const rr=await fetch("https://api.github.com/repos/"+encodeURIComponent(a)+"/"+encodeURIComponent(r),{headers:ghHeaders(),cache:"no-store"});
+    if(!rr.ok){const e=new Error("GitHub "+rr.status);e.status=rr.status;throw e}
+    const info=await rr.json();
+    await ghHamtaFil();
+    save(KEY.cfg,cfg);
+    try{if(t&&$("gh-kom").checked)localStorage.setItem(KEY.token,t);else localStorage.removeItem(KEY.token)}catch(e){}
+    $("msg").textContent=!t?"Inställningarna är sparade. Utan token kan du bara läsa.":(info.permissions&&info.permissions.push===false?"Ansluten, men ditt konto har bara läsrätt till repot.":"Anslutningen fungerar. Du kan nu spara till GitHub.");
+    uppdateraSparfalt();synka(true);
+  }catch(e){
+    cfg=gammalCfg;token=gammalToken;
+    $("msg").textContent=e&&e.status?ghFel(e):"Kunde inte nå GitHub eller filen hade fel format.";
+  }
+};
+$("gh-glom").onclick=()=>{
+  token="";$("gh-token").value="";
+  try{localStorage.removeItem(KEY.token)}catch(e){}
+  uppdateraSparfalt();
+  $("msg").textContent="Token är borttagen från den här enheten.";
+};
+$("ghhamta").onclick=()=>{
+  if(isDirty()&&!konflikt)$("msg").textContent="Du har osparade ändringar. Hämtar för att jämföra med GitHub.";
+  synka(true);
+};
+
+function start(){
+  fyllGh();
+  const utkast=load(KEY.utkast),cache=load(KEY.cache);
+  if(cache&&typeof cache==="object")remote={str:typeof cache.str==="string"?cache.str:null,sha:cache.sha||null};
+  let snap=utkast?rena(utkast):null;
+  if(!snap&&remote.str){try{snap=rena(JSON.parse(remote.str))}catch(e){}}
+  if(!snap){
+    const w=load("week"),l=load("lists"),i=load("ings"),k=load("locks");
+    if(w||l||i)snap=rena({vecka:w,las:k,ratter:l||DEF,ingredienser:i||DEFING});
+  }
+  if(snap)sattData(snap);else laddar=true;
+  uppdateraAllt();uppdateraSparfalt();
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)synka(false)});
+  synka(true);
+}
 function pick(i,used){
   const all=lists[kind(i)];
   const pool=all.filter(x=>!used.includes(x));
@@ -188,16 +538,16 @@ function gen(){
   const used=next.filter(Boolean);
   week=next.map((d,i)=>{if(d)return d;const n=pick(i,used);used.push(n);return n});
   checked=[];save("checked",checked);
-  save("week",week);render();
+  touch();render();
 }
 function swap(i){
   if(locks[i])return;
   const used=week.filter((_,j)=>j!==i&&kind(j)===kind(i));
-  week[i]=pick(i,used);save("week",week);render(i);
+  week[i]=pick(i,used);touch();render(i);
 }
 function render(hit){
   const ul=$("week");ul.textContent="";
-  if(!week||week.length!==7){gen();return}
+  if(!week||week.length!==7){if(laddar){visaLaddar();return}gen();return}
   week.forEach((d,i)=>{
     const li=document.createElement("li");
     if(kind(i)==="helg")li.className="helg";
@@ -223,7 +573,7 @@ function render(hit){
     lk.className="ico";lk.innerHTML=locks[i]?LOCK:UNLOCK;lk.title=locks[i]?"Lås upp":"Lås";
     lk.setAttribute("aria-pressed",locks[i]?"true":"false");
     lk.setAttribute("aria-label",(locks[i]?"Lås upp ":"Lås ")+DAGAR[i]);
-    lk.onclick=()=>{locks[i]=!locks[i];save("locks",locks);render()};
+    lk.onclick=()=>{locks[i]=!locks[i];touch();render()};
     b.disabled=!!locks[i];
     const acts=document.createElement("div");acts.className="acts";const ed=document.createElement("button");ed.type="button";ed.className="edit";ed.innerHTML=PEN;
     ed.setAttribute("aria-label","Skriv egen rätt för "+DAGAR[i]);
@@ -244,7 +594,7 @@ function render(hit){
 $("gen").onclick=gen;
 $("lockall").onclick=()=>{
   const all=locks.every(Boolean);
-  locks=Array(7).fill(!all);save("locks",locks);render();
+  locks=Array(7).fill(!all);touch();render();
 };
 $("copy").onclick=async()=>{
   const t=DAGAR.map((d,i)=>d+": "+week[i]).join("\n");
@@ -252,73 +602,23 @@ $("copy").onclick=async()=>{
   catch(e){$("msg").textContent="Kunde inte kopiera. Markera texten och kopiera själv."}
 };
 ["vardag","helg"].forEach(k=>{
-  $(k).value=lists[k].join("\n");
   $(k).addEventListener("input",()=>{
     lists[k]=$(k).value.split("\n").map(s=>s.trim()).filter(Boolean);
-    save("lists",lists);
+    touch();
   });
 });
 $("reset").onclick=()=>{
-  lists=JSON.parse(JSON.stringify(DEF));save("lists",lists);
+  lists=JSON.parse(JSON.stringify(DEF));touch();
   ["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"));
   fitAll();fillDishSelect();$("msg").textContent="Listan är återställd.";
 };
-render();
-
-const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-const dec=t=>{t=t.replace(/-/g,"+").replace(/_/g,"/");while(t.length%4)t+="=";return decodeURIComponent(escape(atob(t)))};
-async function share(payload,title){
-  const url=location.origin+location.pathname+"#d="+enc(payload);
-  try{
-    if(navigator.share){await navigator.share({title:title,url:url});return}
-    await navigator.clipboard.writeText(url);
-    $("msg").textContent="Länken är kopierad. Skicka den till din fru.";
-  }catch(e){
-    if(e&&e.name==="AbortError")return;
-    prompt("Kopiera länken och skicka den:",url);
-  }
-}
-$("share").onclick=()=>share({w:week,k:locks},"Veckomeny");
-$("sharelist").onclick=()=>share({v:lists},"Rättslista");
-
-function clean(o){
-  const s=x=>typeof x==="string"?x.trim().slice(0,120):"";
-  const out={};
-  if(Array.isArray(o.w)&&o.w.length===7&&o.w.every(x=>typeof x==="string")){
-    out.w=o.w.map(s);
-    out.k=Array.isArray(o.k)&&o.k.length===7?o.k.map(Boolean):Array(7).fill(false);
-  }
-  if(o.v&&Array.isArray(o.v.vardag)&&Array.isArray(o.v.helg)){
-    out.v={vardag:o.v.vardag.map(s).filter(Boolean).slice(0,100),helg:o.v.helg.map(s).filter(Boolean).slice(0,100)};
-  }
-  return out.w||out.v?out:null;
-}
-let incoming=null;
-try{const m=location.hash.match(/^#d=(.+)$/);if(m)incoming=clean(JSON.parse(dec(m[1])))}catch(e){}
-function apply(w,v){
-  if(w&&incoming.w){week=incoming.w;locks=incoming.k;save("week",week);save("locks",locks);render()}
-  if(v&&incoming.v){lists=incoming.v;save("lists",lists);["vardag","helg"].forEach(k=>$(k).value=lists[k].join("\n"));fitAll();fillDishSelect()}
-  incoming=null;$("incoming").hidden=true;
-  try{history.replaceState(null,"",location.pathname)}catch(e){}
-}
-if(incoming){
-  const box=$("incoming");
-  const p=document.createElement("p");
-  p.textContent=incoming.w?"Någon har delat en veckomeny med dig. Din egen meny ersätts om du använder den.":"Någon har delat en rättslista med dig. Din egen lista ersätts om du använder den.";
-  box.appendChild(p);
-  const mk=(t,f)=>{const b=document.createElement("button");b.textContent=t;b.onclick=f;box.appendChild(b)};
-  if(incoming.w)mk("Använd veckan",()=>apply(true,false));
-  if(incoming.v)mk("Använd rättslistan",()=>apply(false,true));
-  mk("Stäng",()=>apply(false,false));
-  box.hidden=false;
-}
 function commitEdit(i,v){
   if(editing!==i)return;
   editing=null;
   v=v.trim().slice(0,120);
   if(v){
     week[i]=v;locks[i]=true;
-    save("week",week);save("locks",locks);
+    touch();
     $("msg").textContent=DAGAR[i]+" har din egen rätt och är låst så att den inte slumpas bort.";
   }
   render();
@@ -326,7 +626,7 @@ function commitEdit(i,v){
 function swapDays(a,b){
   if(locks[a]||locks[b]){$("msg").textContent=DAGAR[locks[a]?a:b]+" är låst. Lås upp dagen först.";return false}
   [week[a],week[b]]=[week[b],week[a]];
-  save("week",week);
+  touch();
   $("msg").textContent=DAGAR[a]+" och "+DAGAR[b]+" bytte plats.";
   render();return true;
 }
@@ -478,14 +778,13 @@ $("ingdish").onchange=showIng;
 $("ingtext").addEventListener("input",()=>{
   const d=$("ingdish").value;if(!d)return;
   ings[d]=$("ingtext").value.split("\n").map(x=>x.trim()).filter(Boolean);
-  save("ings",ings);renderShop();
+  touch();renderShop();
 });
 $("ingreset").onclick=()=>{
-  ings=JSON.parse(JSON.stringify(DEFING));save("ings",ings);showIng();renderShop();
+  ings=JSON.parse(JSON.stringify(DEFING));touch();showIng();renderShop();
   $("msg").textContent="Ingredienserna är återställda.";
 };
 ["vardag","helg"].forEach(k=>$(k).addEventListener("input",fillDishSelect));
-fillDishSelect();
 
 const mq=matchMedia("(prefers-color-scheme: dark)");
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":mq.matches};
@@ -532,6 +831,7 @@ $("edopen").onclick=()=>{stangMeny();const ed=$("editor");ed.hidden=false;fitAll
 $("edclose").onclick=()=>{$("editor").hidden=true};
 if(mq.addEventListener)mq.addEventListener("change",paintTheme);
 paintTheme();
+start();
 if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
 </script>
 </body>
