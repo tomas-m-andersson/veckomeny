@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-19T21:01:32.748Z",
+  "uppdaterad": "2026-10-19T21:21:57.514Z",
   "vecka": [
     "Potatisbullar med bacon",
     "Falukorv med makaroner/stuvade makaroner",
@@ -195,55 +195,9 @@
     ]
   },
   "inkop": {
-    "egna": [
-      {
-        "id": "emvfnnxqw1sty",
-        "text": "mjölk"
-      },
-      {
-        "id": "emvfqor5nfayo",
-        "text": "bröd"
-      },
-      {
-        "id": "emvfqoskfc99d",
-        "text": "ägg"
-      },
-      {
-        "id": "emvfqouqf39us",
-        "text": "godis"
-      },
-      {
-        "id": "emvfqoy1y1lu5",
-        "text": "lax"
-      }
-    ],
+    "egna": [],
     "andrad": {},
-    "borta": [
-      "m|bacon",
-      "m|falukorv",
-      "m|fiskpinnar",
-      "m|frysta ärtor",
-      "|gul lök",
-      "burk|krossade tomater",
-      "m|köttfärs",
-      "|lingonsylt",
-      "m|makaroner",
-      "v|mjölk",
-      "|morötter",
-      "|pizzakit",
-      "m|potatis",
-      "m|potatisbullar",
-      "m|riven ost",
-      "msk|smör",
-      "m|spaghetti",
-      "m|strimlad skinka",
-      "|sylt",
-      "msk|tomatpuré",
-      "msk|vetemjöl",
-      "v|vetemjöl",
-      "|vispgrädde",
-      "|ägg"
-    ],
+    "borta": [],
     "ordning": []
   }
 }
