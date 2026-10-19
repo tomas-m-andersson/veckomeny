@@ -79,13 +79,25 @@ li:nth-child(1){--dc:#e5484d}li:nth-child(2){--dc:#f08a24}li:nth-child(3){--dc:#
 
 /* inköpslista */
 #shopbtn[aria-expanded="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-#shop{background:var(--card);border-radius:20px;padding:16px 18px 18px;margin-top:14px;box-shadow:0 2px 0 var(--line)}
+#shop{position:fixed;inset:0;z-index:15;overflow-y:auto;background:var(--bg);padding:calc(18px + env(safe-area-inset-top,0px)) 18px 0}
 #shop[hidden]{display:none}
-#shop h2{margin:0 0 2px;font-size:1.3rem}
-#shop .hint{margin:0 0 8px}
-.shopitem{display:flex;gap:12px;align-items:center;margin:0;padding:10px 2px;border-bottom:1px solid var(--line);font-weight:400;cursor:pointer}
-.shopitem input{width:22px;height:22px;accent-color:var(--acc);flex:none}
-.shopitem.done span{text-decoration:line-through;color:var(--mut)}
+.shopin{max-width:640px;margin:0 auto;padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
+body.visarshop{overflow:hidden}
+.shophead{display:flex;align-items:center;gap:12px;margin:0 0 8px}
+.shophead h2{margin:0;font-size:1.6rem;font-weight:800}
+#shop .hint{margin:0 0 12px}
+.kort{display:grid;grid-template-columns:32px 28px 1fr auto;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--acc);border-radius:12px;padding:8px 10px 8px 4px;margin-bottom:8px;position:relative}
+.kort.egen{border-left-color:var(--helg)}
+.kort input[type=checkbox]{width:24px;height:24px;accent-color:var(--acc);margin:0}
+.kort .ktext{font-size:1.05rem;overflow-wrap:anywhere}
+.kort.done .ktext{text-decoration:line-through;color:var(--mut)}
+.kort .acts button{padding:0}
+.kort.dragging{z-index:5;box-shadow:0 10px 26px rgba(0,0,0,.28);cursor:grabbing}
+.kort.flytt{transition:transform .15s}
+.fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));width:62px;height:62px;border-radius:50%;padding:0;background:var(--acc);color:var(--accink);border:0;box-shadow:0 8px 22px rgba(0,0,0,.3);display:grid;place-items:center;z-index:16}
+.fab svg{width:30px;height:30px;display:block}
+body.harspar .fab{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+#shopmsg{min-height:1.4em;color:var(--mut);margin:10px 0 0}
 .shopact{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 #shopmissing{color:var(--mut);font-size:.9rem;margin:12px 0 0}
 select{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:8px}
@@ -188,12 +200,16 @@ body.harspar main{padding-bottom:110px}
 </div>
 <ul id="week"></ul>
 <section id="shop" hidden aria-label="Inköpslista">
-<h2>Inköpslista</h2>
-<p class="hint">Veckans ingredienser ihopslagna för 4 personer. Bocka av i affären.</p>
+<div class="shopin">
+<div class="shophead"><button id="shopback" class="ico" type="button" aria-label="Tillbaka till veckomenyn" title="Tillbaka"></button><h2>Inköpslista</h2></div>
+<p class="hint">Veckans ingredienser ihopslagna för 4 personer. Bocka av i affären. Dra i prickarna för att flytta ett kort, använd pennan för att ändra och papperskorgen för att ta bort. Ändringar sparas först när du trycker på Spara till GitHub.</p>
 <div id="shoplist"></div>
-<p id="shopempty" class="hint" hidden>Inga ingredienser hittades för veckans rätter.</p>
+<p id="shopempty" class="hint" hidden>Listan är tom. Tryck på plusknappen för att lägga till en vara.</p>
 <p id="shopmissing" hidden></p>
-<div class="shopact"><button id="shopcopy">Kopiera listan</button><button id="shopshare">Dela listan</button><button id="shopclear">Avmarkera alla</button></div>
+<div class="shopact"><button id="shopcopy" type="button">Kopiera listan</button><button id="shopshare" type="button">Dela listan</button><button id="shopclear" type="button">Avmarkera alla</button><button id="shopreset" type="button">Återställ listan</button></div>
+<p id="shopmsg" role="status"></p>
+</div>
+<button class="fab" id="shopadd" type="button" aria-label="Lägg till vara" title="Lägg till vara"></button>
 </section>
 <p id="msg" role="status"></p>
 <section id="editor" hidden>
@@ -212,6 +228,7 @@ body.harspar main{padding-bottom:110px}
 </section>
 </main>
 <div id="sparbar" role="region" aria-label="Osparade ändringar" hidden><span id="sparbar-text"></span><button class="main" id="sparbar-knapp" type="button"></button></div>
+<dialog id="addDialog" class="dialog" aria-label="Lägg till vara"></dialog>
 <dialog id="sparDialog" class="dialog" aria-label="Spara till GitHub"></dialog>
 <script>
 const DAGAR=["Måndag","Tisdag","Onsdag","Torsdag","Fredag","Lördag","Söndag"];
@@ -229,6 +246,9 @@ let editing=null;
 const IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
 const LOCK=IC+'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const UNLOCK=IC+'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>';
+const TRASH=IC+'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 10v6M14 10v6"/></svg>';
+const PLUS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+const BACK=IC+'<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>';
 const REFRESH=IC+'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
 const PEN='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
 let week=null;
@@ -252,7 +272,9 @@ let filSaknas=false,laddar=false,konflikt=null,skrivOver=false,senastSynk=0,synk
 const klon=o=>JSON.parse(JSON.stringify(o));
 const klockan=()=>new Date().toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
 
-function snapshot(){return{vecka:week,las:locks,ratter:lists,ingredienser:ings}}
+const tomInk=()=>({egna:[],andrad:{},borta:[],ordning:[]});
+let inkop=tomInk();
+function snapshot(){return{vecka:week,las:locks,ratter:lists,ingredienser:ings,inkop:inkop}}
 function stable(o){return JSON.stringify(o,(k,v)=>v&&typeof v==="object"&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v)}
 function rena(o){
   if(!o||typeof o!=="object")return null;
@@ -261,18 +283,25 @@ function rena(o){
   const r=o.ratter&&typeof o.ratter==="object"?o.ratter:{};
   const ing={};
   if(o.ingredienser&&typeof o.ingredienser==="object")Object.keys(o.ingredienser).slice(0,600).forEach(k=>{const kk=t(k);if(kk)ing[kk]=arr(o.ingredienser[k])});
+  const ik=o.inkop&&typeof o.inkop==="object"?o.inkop:{},ia={};
+  if(ik.andrad&&typeof ik.andrad==="object")Object.keys(ik.andrad).slice(0,600).forEach(k=>{const v=t(ik.andrad[k]);if(v)ia[k.slice(0,200)]=v});
+  const ink={
+    egna:Array.isArray(ik.egna)?ik.egna.map(e=>({id:t(e&&e.id),text:t(e&&e.text)})).filter(e=>e.id&&e.text).slice(0,300):[],
+    andrad:ia,borta:arr(ik.borta),ordning:arr(ik.ordning)
+  };
   return{
+    inkop:ink,
     vecka:Array.isArray(o.vecka)&&o.vecka.length===7&&o.vecka.every(x=>typeof x==="string")?o.vecka.map(t):null,
     las:Array.isArray(o.las)&&o.las.length===7?o.las.map(Boolean):Array(7).fill(false),
     ratter:{vardag:arr(r.vardag),helg:arr(r.helg)},
     ingredienser:ing
   };
 }
-function sattData(snap){week=snap.vecka;locks=snap.las;lists=snap.ratter;ings=snap.ingredienser}
+function sattData(snap){week=snap.vecka;locks=snap.las;lists=snap.ratter;ings=snap.ingredienser;inkop=snap.inkop||tomInk()}
 function fyllTextrutor(){["vardag","helg"].forEach(k=>{$(k).value=lists[k].join("\n")});fitAll()}
 function uppdateraAllt(){fyllTextrutor();render()}
 function visaLaddar(){const ul=$("week");ul.textContent="";const li=document.createElement("li");li.className="laddar";li.textContent="Hämtar veckomenyn från GitHub…";ul.appendChild(li)}
-function startaMedStandard(){laddar=false;lists=klon(DEF);ings=klon(DEFING);locks=Array(7).fill(false);week=null;fyllTextrutor();gen()}
+function startaMedStandard(){laddar=false;lists=klon(DEF);ings=klon(DEFING);inkop=tomInk();locks=Array(7).fill(false);week=null;fyllTextrutor();gen()}
 
 function isDirty(){
   if(week===null)return false;
@@ -320,7 +349,7 @@ async function ghHamtaFil(){
 }
 function filText(){
   const s=snapshot();
-  return JSON.stringify({format:1,uppdaterad:new Date().toISOString(),vecka:s.vecka,las:s.las,ratter:s.ratter,ingredienser:s.ingredienser},null,2)+"\n";
+  return JSON.stringify({format:1,uppdaterad:new Date().toISOString(),vecka:s.vecka,las:s.las,ratter:s.ratter,ingredienser:s.ingredienser,inkop:s.inkop},null,2)+"\n";
 }
 async function ghSkriv(sha){
   const body={message:"Uppdatera veckomeny (från appen)",content:tillB64(filText()),branch:cfg.gren};
@@ -417,10 +446,12 @@ function andringar(){
   });
   const ik=Object.keys(nu.ingredienser).filter(k=>stable(nu.ingredienser[k])!==stable(g.ingredienser[k]||null)).concat(Object.keys(g.ingredienser).filter(k=>!(k in nu.ingredienser)));
   if(ik.length)rad.push("Ingredienser ändrade för: "+ik.slice(0,6).join(", ")+(ik.length>6?" och "+(ik.length-6)+" till":""));
+  if(stable(nu.inkop)!==stable(g.inkop||tomInk()))rad.push("Inköpslistan ändrad (egna varor, ändringar, borttagna varor eller ordning)");
   if(!rad.length)rad.push("Små ändringar i filen.");
   return rad;
 }
 function oppnaInstallningar(text){
+  if(!$("shop").hidden)stangShop();
   const m=$("meny");m.hidden=false;
   $("settings").setAttribute("aria-expanded","true");$("settings").setAttribute("aria-label","Stäng menyn");
   $("ghbox").open=true;
@@ -540,7 +571,7 @@ function gen(){
   const used=next.filter(Boolean);
   week=next.map((d,i)=>{if(d)return d;const n=pick(i,used);used.push(n);return n});
   checked=[];save("checked",checked);
-  touch();render();
+  pruneInkop();touch();render();
 }
 function swap(i){
   if(locks[i])return;
@@ -722,46 +753,167 @@ function shopItems(){
   items.forEach(it=>{it.text=qtyText(it)});
   return{items:items,missing:missing};
 }
-function shopText(){
-  return "Inköpslista\n"+shopItems().items.map(it=>"- "+(it.text?it.text+" ":"")+it.name).join("\n");
+const sag=t=>{$("shopmsg").textContent=t};
+function shopCards(){
+  const r=shopItems(),cards=[];
+  r.items.forEach(it=>{
+    if(inkop.borta.includes(it.key))return;
+    const auto=(it.text?it.text+" ":"")+it.name;
+    cards.push({id:it.key,auto:auto,text:inkop.andrad[it.key]!=null?inkop.andrad[it.key]:auto,egen:false});
+  });
+  inkop.egna.forEach(e=>cards.push({id:e.id,text:e.text,egen:true}));
+  const pos=id=>{const i=inkop.ordning.indexOf(id);return i<0?1e6:i};
+  cards.forEach((c,i)=>{c.i=i});
+  cards.sort((a,b)=>pos(a.id)-pos(b.id)||a.i-b.i);
+  return{cards:cards,missing:r.missing};
 }
-
+function shopText(){return"Inköpslista\n"+shopCards().cards.map(c=>"- "+c.text).join("\n")}
+function pruneInkop(){
+  const r=shopItems(),keys=r.items.map(i=>i.key),ids=keys.concat(inkop.egna.map(e=>e.id));
+  Object.keys(inkop.andrad).forEach(k=>{if(!keys.includes(k))delete inkop.andrad[k]});
+  inkop.borta=inkop.borta.filter(k=>keys.includes(k));
+  inkop.ordning=inkop.ordning.filter(k=>ids.includes(k));
+}
+let shopEdit=null;
+function sparaOrdning(ids){inkop.ordning=ids;touch();renderShop()}
+function andraKort(c,text){
+  text=text.trim().slice(0,200);shopEdit=null;
+  if(!text){renderShop();return}
+  if(c.egen){const e=inkop.egna.find(x=>x.id===c.id);if(e)e.text=text}
+  else if(text===c.auto)delete inkop.andrad[c.id];
+  else inkop.andrad[c.id]=text;
+  touch();renderShop();
+}
+function taBortKort(c){
+  if(c.egen)inkop.egna=inkop.egna.filter(e=>e.id!==c.id);
+  else{if(!inkop.borta.includes(c.id))inkop.borta.push(c.id);delete inkop.andrad[c.id]}
+  inkop.ordning=inkop.ordning.filter(k=>k!==c.id);
+  checked=checked.filter(k=>k!==c.id);save("checked",checked);
+  shopEdit=null;touch();renderShop();sag("Tog bort "+c.text+". Hela listan kan återställas längst ner.");
+}
 function renderShop(){
   const box=$("shop");if(box.hidden)return;
-  const r=shopItems(),list=$("shoplist");list.textContent="";
-  r.items.forEach(it=>{
-    const lab=document.createElement("label");lab.className="shopitem";
-    const cb=document.createElement("input");cb.type="checkbox";cb.checked=checked.includes(it.key);
-    lab.classList.toggle("done",cb.checked);
-    cb.onchange=()=>{
-      checked=cb.checked?checked.concat(it.key):checked.filter(k=>k!==it.key);
-      save("checked",checked);lab.classList.toggle("done",cb.checked);
+  const r=shopCards(),list=$("shoplist");list.textContent="";
+  r.cards.forEach((c,idx)=>{
+    const k=document.createElement("div");k.className="kort"+(c.egen?" egen":"")+(checked.includes(c.id)?" done":"");k.dataset.id=c.id;
+    const gr=document.createElement("button");gr.type="button";gr.className="grip";gr.innerHTML=GRIP;
+    gr.setAttribute("aria-label","Flytta "+c.text+": dra, eller tryck pil upp eller ner");
+    gr.onkeydown=ev=>{
+      const d=ev.key==="ArrowUp"?-1:ev.key==="ArrowDown"?1:0;if(!d)return;
+      ev.preventDefault();const ids=r.cards.map(x=>x.id),j=idx+d;if(j<0||j>=ids.length)return;
+      [ids[idx],ids[j]]=[ids[j],ids[idx]];sparaOrdning(ids);
+      const nyl=[...$("shoplist").children][j];if(nyl)nyl.querySelector(".grip").focus();
     };
-    const t=document.createElement("span");
-    if(it.text){const b=document.createElement("b");b.textContent=it.text+" ";t.appendChild(b)}
-    t.appendChild(document.createTextNode(it.name));
-    lab.append(cb,t);list.appendChild(lab);
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=checked.includes(c.id);
+    cb.setAttribute("aria-label","Bocka av "+c.text);
+    cb.onchange=()=>{checked=cb.checked?checked.concat(c.id):checked.filter(x=>x!==c.id);save("checked",checked);k.classList.toggle("done",cb.checked)};
+    let t;
+    if(shopEdit===c.id){
+      t=document.createElement("input");t.type="text";t.maxLength=200;t.value=c.text;t.className="ratt-in";
+      t.setAttribute("aria-label","Ändra vara");t.setAttribute("enterkeyhint","done");
+      let klar=false;
+      t.onkeydown=ev=>{
+        if(ev.key==="Enter"){ev.preventDefault();klar=true;andraKort(c,t.value)}
+        else if(ev.key==="Escape"){klar=true;shopEdit=null;renderShop()}
+      };
+      t.onblur=()=>{if(!klar)andraKort(c,t.value)};
+      setTimeout(()=>{t.focus();t.select()},0);
+    }else{t=document.createElement("div");t.className="ktext";t.textContent=c.text}
+    const acts=document.createElement("div");acts.className="acts";
+    const ed=document.createElement("button");ed.type="button";ed.className="edit";ed.innerHTML=PEN;
+    ed.setAttribute("aria-label","Ändra "+c.text);ed.title="Ändra";ed.onclick=()=>{shopEdit=c.id;renderShop()};
+    const del=document.createElement("button");del.type="button";del.className="ico";del.innerHTML=TRASH;
+    del.setAttribute("aria-label","Ta bort "+c.text);del.title="Ta bort";del.onclick=()=>taBortKort(c);
+    acts.append(ed,del);
+    k.append(gr,cb,t,acts);list.appendChild(k);
   });
-  $("shopempty").hidden=r.items.length>0;
+  $("shopempty").hidden=r.cards.length>0;
   const mi=$("shopmissing");mi.hidden=!r.missing.length;
   mi.textContent=r.missing.length?"Saknar ingredienser: "+r.missing.join(", ")+". Lägg till dem under Redigera rätter.":"";
 }
-$("shopbtn").onclick=()=>{
-  const s=$("shop");s.hidden=!s.hidden;
-  $("shopbtn").setAttribute("aria-expanded",String(!s.hidden));
-  renderShop();
-  if(!s.hidden)s.scrollIntoView({behavior:"smooth",block:"nearest"});
+/* dra för att flytta */
+$("shoplist").addEventListener("pointerdown",e=>{
+  const g=e.target.closest(".grip");if(!g||e.button>0)return;
+  e.preventDefault();
+  const list=$("shoplist"),box=$("shop"),cards=[...list.children],card=g.closest(".kort"),from=cards.indexOf(card);
+  const sc0=box.scrollTop,y0=e.clientY,rects=cards.map(c=>{const r=c.getBoundingClientRect();return{top:r.top+sc0,h:r.height}});
+  const step=rects[from].h+8;let lastY=y0,to=from,raf=0,ar=true;
+  card.classList.add("dragging");cards.forEach(c=>{if(c!==card)c.classList.add("flytt")});
+  try{g.setPointerCapture(e.pointerId)}catch(x){}
+  const upd=()=>{
+    if(!ar)return;
+    if(lastY<90)box.scrollTop-=12;else if(lastY>innerHeight-90)box.scrollTop+=12;
+    const dy=lastY-y0+(box.scrollTop-sc0);
+    card.style.transform="translateY("+dy+"px)";
+    const cy=rects[from].top+rects[from].h/2+dy;
+    to=rects.filter((r,i)=>i!==from&&r.top+r.h/2<cy).length;
+    cards.forEach((c,i)=>{if(i===from)return;const o=i<from?i:i-1,np=o>=to?o+1:o;c.style.transform=np===i?"":"translateY("+(np-i)*step+"px)"});
+    raf=requestAnimationFrame(upd);
+  };
+  const mv=ev=>{lastY=ev.clientY};
+  const end=(ev,ok)=>{
+    ar=false;cancelAnimationFrame(raf);
+    g.removeEventListener("pointermove",mv);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",cn);
+    cards.forEach(c=>{c.style.transform="";c.classList.remove("dragging","flytt")});
+    if(ok&&to!==from){const ids=cards.map(c=>c.dataset.id);ids.splice(from,1);ids.splice(to,0,card.dataset.id);sparaOrdning(ids)}
+  };
+  const up=ev=>end(ev,true),cn=ev=>end(ev,false);
+  g.addEventListener("pointermove",mv);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",cn);
+  raf=requestAnimationFrame(upd);
+});
+/* öppna och stäng */
+function oppnaShop(){
+  stangMeny();
+  $("shop").hidden=false;document.body.classList.add("visarshop");
+  $("shopbtn").setAttribute("aria-expanded","true");
+  shopEdit=null;sag("");renderShop();$("shop").scrollTop=0;
+  try{history.pushState({shop:1},"")}catch(e){}
+}
+function stangShop(){
+  if($("shop").hidden)return;
+  $("shop").hidden=true;document.body.classList.remove("visarshop");
+  $("shopbtn").setAttribute("aria-expanded","false");
+  if($("addDialog").open)$("addDialog").close();
+}
+$("shopbtn").onclick=oppnaShop;
+$("shopback").onclick=()=>{if(history.state&&history.state.shop)history.back();else stangShop()};
+window.addEventListener("popstate",()=>stangShop());
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape"&&!$("shop").hidden&&!$("addDialog").open&&shopEdit===null)$("shopback").click()});
+/* lägg till vara */
+function oppnaLaggTill(){
+  const d=$("addDialog");d.textContent="";
+  const h=document.createElement("h2");h.textContent="Lägg till vara";
+  const inp=document.createElement("input");inp.type="text";inp.maxLength=200;inp.placeholder="till exempel 2 liter mjölk";
+  inp.setAttribute("aria-label","Vara");inp.setAttribute("enterkeyhint","done");inp.autocomplete="off";
+  const st=document.createElement("p");st.className="hint";st.setAttribute("role","status");st.style.marginTop="10px";
+  const rad=document.createElement("div");rad.className="knappar";
+  const klar=document.createElement("button");klar.type="button";klar.textContent="Klar";klar.onclick=()=>d.close();
+  const add=document.createElement("button");add.type="button";add.className="main";add.textContent="Lägg till";
+  const gor=()=>{
+    const v=inp.value.trim().slice(0,200);if(!v){inp.focus();return}
+    inkop.egna.push({id:"e"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),text:v});
+    touch();renderShop();inp.value="";st.textContent="Lade till: "+v;inp.focus();
+    const bx=$("shop");bx.scrollTop=bx.scrollHeight;
+  };
+  add.onclick=gor;inp.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();gor()}};
+  rad.append(klar,add);d.append(h,inp,st,rad);d.showModal();inp.focus();
+}
+$("shopadd").innerHTML=PLUS;$("shopback").innerHTML=BACK;
+$("shopadd").onclick=oppnaLaggTill;
+$("shopreset").onclick=()=>{
+  if(!confirm("Återställa inköpslistan? Egna varor, ändringar, borttagna varor och ordning försvinner."))return;
+  inkop=tomInk();touch();renderShop();sag("Listan är återställd.");
 };
 $("shopcopy").onclick=async()=>{
-  try{await navigator.clipboard.writeText(shopText());$("msg").textContent="Inköpslistan är kopierad."}
-  catch(e){$("msg").textContent="Kunde inte kopiera listan."}
+  try{await navigator.clipboard.writeText(shopText());sag("Inköpslistan är kopierad.")}
+  catch(e){sag("Kunde inte kopiera listan.")}
 };
 $("shopshare").onclick=async()=>{
   const text=shopText();
   try{
     if(navigator.share){await navigator.share({title:"Inköpslista",text:text});return}
     await navigator.clipboard.writeText(text);
-    $("msg").textContent="Listan är kopierad. Klistra in den i ett meddelande.";
+    sag("Listan är kopierad. Klistra in den i ett meddelande.");
   }catch(e){
     if(e&&e.name==="AbortError")return;
     prompt("Kopiera listan:",text);
