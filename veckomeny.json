@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-19T19:17:32.985Z",
+  "uppdaterad": "2026-10-19T19:17:38.786Z",
   "vecka": [
     "Potatisbullar med bacon",
     "Falukorv med makaroner/stuvade makaroner",
@@ -198,6 +198,31 @@
     "egna": [],
     "andrad": {},
     "borta": [],
-    "ordning": []
+    "ordning": [
+      "m|bacon",
+      "m|falukorv",
+      "m|fiskpinnar",
+      "m|frysta ärtor",
+      "|gul lök",
+      "burk|krossade tomater",
+      "m|köttfärs",
+      "|lingonsylt",
+      "m|makaroner",
+      "v|mjölk",
+      "|morötter",
+      "|pizzakit",
+      "m|potatis",
+      "m|potatisbullar",
+      "m|riven ost",
+      "msk|smör",
+      "m|spaghetti",
+      "m|strimlad skinka",
+      "|sylt",
+      "msk|tomatpuré",
+      "msk|vetemjöl",
+      "v|vetemjöl",
+      "|vispgrädde",
+      "|ägg"
+    ]
   }
 }
