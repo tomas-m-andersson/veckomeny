@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-19T22:13:30.031Z",
+  "uppdaterad": "2026-10-20T05:02:10.154Z",
   "vecka": [
     "Potatisbullar med bacon",
     "Falukorv med makaroner/stuvade makaroner",
@@ -195,19 +195,9 @@
     ]
   },
   "inkop": {
-    "egna": [
-      {
-        "id": "emvfs46vtitf7",
-        "text": "Mjölk"
-      },
-      {
-        "id": "emvfscrvoodis",
-        "text": "Godis"
-      }
-    ],
+    "egna": [],
     "andrad": {},
-    "borta": [],
-    "ordning": [
+    "borta": [
       "m|bacon",
       "m|falukorv",
       "m|fiskpinnar",
@@ -231,9 +221,8 @@
       "msk|vetemjöl",
       "v|vetemjöl",
       "|vispgrädde",
-      "|ägg",
-      "emvfs46vtitf7",
-      "emvfscrvoodis"
-    ]
+      "|ägg"
+    ],
+    "ordning": []
   }
 }
