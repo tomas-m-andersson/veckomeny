@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-28T17:29:27.644Z",
+  "uppdaterad": "2026-10-28T17:29:34.030Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -11,13 +11,13 @@
     "Köttfärslimpa med potatis och sås"
   ],
   "las": [
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
   ],
   "ratter": {
     "vardag": [
