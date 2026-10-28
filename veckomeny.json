@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-28T17:32:36.851Z",
+  "uppdaterad": "2026-10-28T17:32:45.253Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -213,6 +213,31 @@
       "|lingonsylt",
       "|ketchup"
     ],
-    "ordning": []
+    "ordning": [
+      "|1-2 gula lökar",
+      "|gul lök",
+      "v|crème fraiche",
+      "msk|currypulver",
+      "|gurka",
+      "|korv",
+      "|korvbröd",
+      "m|kycklingfilé",
+      "m|köttfärs",
+      "burk|majs",
+      "v|matlagningsgrädde",
+      "förp|mjuka tacobröd",
+      "v|mjölk",
+      "|paprika",
+      "|påsar fransk löksoppa",
+      "m|riven ost",
+      "|rostad lök",
+      "burk|salsa",
+      "|salta jordnötter",
+      "m|strimlad skinka",
+      "förp|tacoskal",
+      "|tomat",
+      "|vispgrädde",
+      "|ägg"
+    ]
   }
 }
