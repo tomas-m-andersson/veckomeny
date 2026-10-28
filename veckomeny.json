@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-28T17:31:48.471Z",
+  "uppdaterad": "2026-10-28T17:31:53.802Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -200,7 +200,8 @@
     "andrad": {},
     "borta": [
       "v|vetemjöl",
-      "v|vispgrädde"
+      "v|vispgrädde",
+      "förp|tacokrydda"
     ],
     "ordning": []
   }
