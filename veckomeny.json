@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-11-01T17:21:06.559Z",
+  "uppdaterad": "2026-11-01T17:22:25.449Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -215,7 +215,8 @@
       "m|kycklingfilé",
       "|1-2 gula lökar",
       "|gul lök",
-      "msk|currypulver"
+      "msk|currypulver",
+      "burk|majs"
     ],
     "ordning": [
       "v|crème fraiche",
@@ -223,7 +224,6 @@
       "|korv",
       "|korvbröd",
       "m|köttfärs",
-      "burk|majs",
       "v|matlagningsgrädde",
       "förp|mjuka tacobröd",
       "v|mjölk",
