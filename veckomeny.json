@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-11-01T17:22:25.449Z",
+  "uppdaterad": "2026-11-01T17:24:59.718Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -216,7 +216,8 @@
       "|1-2 gula lökar",
       "|gul lök",
       "msk|currypulver",
-      "burk|majs"
+      "burk|majs",
+      "|rostad lök"
     ],
     "ordning": [
       "v|crème fraiche",
@@ -230,7 +231,6 @@
       "|paprika",
       "|påsar fransk löksoppa",
       "m|riven ost",
-      "|rostad lök",
       "burk|salsa",
       "|salta jordnötter",
       "m|strimlad skinka",
