@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-10-28T17:32:45.253Z",
+  "uppdaterad": "2026-11-01T16:40:19.092Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -211,7 +211,8 @@
       "m|pasta",
       "|matlagningsgrädde",
       "|lingonsylt",
-      "|ketchup"
+      "|ketchup",
+      "m|kycklingfilé"
     ],
     "ordning": [
       "|1-2 gula lökar",
@@ -221,7 +222,6 @@
       "|gurka",
       "|korv",
       "|korvbröd",
-      "m|kycklingfilé",
       "m|köttfärs",
       "burk|majs",
       "v|matlagningsgrädde",
