@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-11-02T20:44:51.711Z",
+  "uppdaterad": "2026-11-02T20:45:03.111Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -196,7 +196,12 @@
     ]
   },
   "inkop": {
-    "egna": [],
+    "egna": [
+      {
+        "id": "emvzq9nxe4j3t",
+        "text": "Havredryck"
+      }
+    ],
     "andrad": {},
     "borta": [
       "|1-2 gula lökar",
