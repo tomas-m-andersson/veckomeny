@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-11-04T11:25:24.977Z",
+  "uppdaterad": "2026-11-04T11:46:05.850Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -196,28 +196,7 @@
     ]
   },
   "inkop": {
-    "egna": [
-      {
-        "id": "emvzq9nxe4j3t",
-        "text": "2 Havredryck"
-      },
-      {
-        "id": "emvzqaenluoyh",
-        "text": "Leverpastej"
-      },
-      {
-        "id": "emw1zltuy8i6h",
-        "text": "Hårdbröd"
-      },
-      {
-        "id": "emw1zlx3g40xk",
-        "text": "Mjukbröd"
-      },
-      {
-        "id": "emw215o93p3z1",
-        "text": "Bindor"
-      }
-    ],
+    "egna": [],
     "andrad": {},
     "borta": [
       "|1-2 gula lökar",
