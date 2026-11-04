@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-11-04T21:43:48.614Z",
+  "uppdaterad": "2026-11-04T21:43:59.576Z",
   "vecka": [
     "Korv med bröd",
     "Pannkakor",
@@ -11,13 +11,13 @@
     "Köttfärslimpa med potatis och sås"
   ],
   "las": [
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
   ],
   "ratter": {
     "vardag": [
