@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "uppdaterad": "2026-11-02T20:45:37.716Z",
+  "uppdaterad": "2026-11-04T10:41:59.447Z",
   "vecka": [
     "Korv med bröd",
     "Kyckling med currysås och ris",
@@ -204,6 +204,10 @@
       {
         "id": "emvzqaenluoyh",
         "text": "Leverpastej"
+      },
+      {
+        "id": "emw1zltuy8i6h",
+        "text": "Hårdbröd"
       }
     ],
     "andrad": {},
