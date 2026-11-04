@@ -1,23 +1,23 @@
 {
   "format": 1,
-  "uppdaterad": "2026-11-04T11:46:05.850Z",
+  "uppdaterad": "2026-11-04T21:43:48.614Z",
   "vecka": [
     "Korv med bröd",
-    "Kyckling med currysås och ris",
-    "Pasta med skinksås",
     "Pannkakor",
+    "Pasta med skinksås",
+    "Kyckling med currysås och ris",
     "Tacos",
     "Våfflor",
     "Köttfärslimpa med potatis och sås"
   ],
   "las": [
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
   ],
   "ratter": {
     "vardag": [
